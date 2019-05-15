@@ -20,7 +20,7 @@ class TextLoggerHook(Hook):
     @master_only
     def _log_info(self, log_dict, runner):
         if runner.mode == 'train':
-            lr_str = ', '.join([f'{lr:.5f}' for lr in log_dict['lr']])
+            lr_str = ', '.join([f'{lr:.3e}' for lr in log_dict['lr']])
             log_str = f'Epoch [{log_dict["epoch"]}][{log_dict["iter"]}/{len(runner.data_loader)}]\tlr: {lr_str}, '
             if 'time' in log_dict.keys():
                 self.time_sec_tot += (log_dict['time'] * len(runner.data_loader))
@@ -31,7 +31,7 @@ class TextLoggerHook(Hook):
                 log_str += f'time: {log_dict["time"]:.3f}, data_time: {log_dict["data_time"]:.3f}, '
                 log_str += f'memory: {log_dict["memory"]}, '
         else:
-            log_str = f'Epoch({log_dict["mode"]}) [{log_dict["epoch"] - 1}][{log_dict["iter"]}]\t'
+            log_str = f'Epoch({log_dict["mode"]}) [{log_dict["epoch"]}][{log_dict["iter"]}]\t'
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack

@@ -1,18 +1,17 @@
 import torch
-import logging
 import os
 import os.path as osp
-from .utils.misc import object_from_dict, get_dist_info, get_timestamp
-from .utils.log_buffer import LogBuffer
-from .utils.checkpoint import load_checkpoint
-from .factory import make_model, make_optimizer, make_file_handler
-
 from . import hooks
 from .hooks import Hook, get_priority, OptimizerHook, CheckpointHook, IterTimerHook, lr_scheduler, LogBufferHook
 
+from .utils.misc import object_from_dict, get_dist_info
+from .utils.log_buffer import LogBuffer
+from .utils.checkpoint import load_checkpoint
+from .factory import make_model, make_optimizer, make_logger
+
 
 class Runner:
-    def __init__(self, model, optimizer, batch_processor, device, work_dir):
+    def __init__(self, model, optimizer, batch_processor, device, work_dir, logger=None):
         self.work_dir = osp.abspath(work_dir)
         os.makedirs(self.work_dir, exist_ok=True)
 
@@ -22,9 +21,8 @@ class Runner:
 
         self.log_buffer = LogBuffer()
         self.rank, self.world_size = get_dist_info()
-        self.timestamp = get_timestamp()
 
-        self.logger = self.init_logger(work_dir)
+        self.logger = self.init_logger(logger)
         self.model = self.init_model(model)
         self.optimizer = self.init_optimizer(optimizer)
 
@@ -41,21 +39,16 @@ class Runner:
     def init_model(self, model):
         if isinstance(model, dict):
             return make_model(model, self.device)
-        else:
-            return model
+        return model
 
     def init_optimizer(self, optimizer):
         if isinstance(optimizer, dict):
             return make_optimizer(self.model, optimizer)
-        else:
-            return optimizer
+        return optimizer
 
-    def init_logger(self, log_dir=None):
-        logger = logging.getLogger(__name__)
-        logger.setLevel(logging.INFO)
-        if log_dir and self.rank == 0:
-            log_file = osp.join(log_dir, f'{self.timestamp}.log')
-            make_file_handler(logger, log_file, level=logging.INFO)
+    def init_logger(self, logger):
+        if logger is None:
+            return make_logger(self.work_dir)
         return logger
 
     @property
