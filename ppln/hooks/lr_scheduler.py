@@ -1,5 +1,5 @@
 from math import cos, pi
-
+from torch.optim.lr_scheduler import ReduceLROnPlateau
 from .hook import Hook
 
 
@@ -78,6 +78,19 @@ class LrSchedulerHook(Hook):
             else:
                 warmup_lr = self.get_warmup_lr(cur_iter)
                 self._set_lr(runner, warmup_lr)
+
+
+class ReduceLROnPlateauHook(Hook):
+    def __init__(self, metric_name, **kwargs):
+        self.metric_name = metric_name
+        self.kwargs = kwargs
+        self.scheduler = None
+
+    def before_run(self, runner):
+        self.scheduler = ReduceLROnPlateau(optimizer=runner.optimizer, **self.kwargs)
+
+    def after_val_epoch(self, runner):
+        self.scheduler.step(runner.log_buffer.output[self.metric_name])
 
 
 class FixedLrSchedulerHook(LrSchedulerHook):

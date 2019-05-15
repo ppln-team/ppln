@@ -9,7 +9,7 @@ batch_size = 256
 # optimizer and learning rate
 optimizer = dict(type='torch.optim.Adam', lr=3e-3)
 optimizer_config = dict(grad_clip=None)
-lr_config = dict(type='StepLrSchedulerHook', step=3)
+lr_config = dict(type='ReduceLROnPlateauHook', metric_name='loss', mode='min', patience=0)
 
 # runtime settings
 work_dir = '/data/demo'

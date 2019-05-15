@@ -31,11 +31,11 @@ class CheckpointHook(Hook):
         if self._is_update(metric):
             self._checkpoints.put((metric, self.current_filename(runner)))
             self._save_checkpoint(runner)
-        if self.compare_metric(self._best_metric, metric):
+        if self._cmp(self._best_metric, metric):
             self._best_metric = metric
             self._save_link(runner)
 
-    def compare_metric(self, x, y):
+    def _cmp(self, x, y):
         return (x < y and self.mode == 'max') or (x > y and self.mode == 'min')
 
     def _is_update(self, metric):
@@ -44,7 +44,7 @@ class CheckpointHook(Hook):
 
         min_metric, min_filename = self._checkpoints.get()
 
-        if self.compare_metric(min_metric, metric):
+        if self._cmp(min_metric, metric):
             os.remove(min_filename)
             return True
 
