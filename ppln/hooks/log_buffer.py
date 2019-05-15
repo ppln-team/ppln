@@ -28,7 +28,7 @@ class LogBufferHook(Hook):
             io.dump(
                 {
                     'value_history': runner.log_buffer.value_history,
-                    'n_history': runner.log_buffer.value_history
+                    'n_history': runner.log_buffer.n_history
                 }, tmp_file
             )
             dist.barrier()
@@ -37,15 +37,10 @@ class LogBufferHook(Hook):
     def before_epoch(self, runner):
         runner.log_buffer.clear()
 
-    def after_train_iter(self, runner):
+    def after_iter(self, runner):
         runner.log_buffer.average()
 
-    def after_train_epoch(self, runner):
-        if self.distributed:
-            self.sync(runner)
-        runner.log_buffer.average()
-
-    def after_val_iter(self, runner):
+    def after_epoch(self, runner):
         if self.distributed:
             self.sync(runner)
         runner.log_buffer.average()

@@ -51,12 +51,6 @@ def batch_processor(model, data, train_mode, device):
     return outputs
 
 
-def get_logger(log_level):
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=log_level)
-    logger = logging.getLogger()
-    return logger
-
-
 def init_dist(backend='nccl', **kwargs):
     if mp.get_start_method(allow_none=True) is None:
         mp.set_start_method('spawn')
@@ -79,20 +73,14 @@ def main():
 
     cfg = Config.fromfile(args.config)
 
-    logger = get_logger(cfg.log_level)
-
     # init distributed environment if necessary
     if args.launcher == 'none':
         dist = False
-        logger.info('Disabled distributed training.')
     else:
         dist = True
         init_dist(**cfg.dist_params)
         world_size = torch.distributed.get_world_size()
         rank = torch.distributed.get_rank()
-        if rank != 0:
-            logger.setLevel('ERROR')
-        logger.info('Enabled distributed training.')
 
     # build datasets and dataloaders
     normalize = transforms.Normalize(mean=cfg.mean, std=cfg.std)
@@ -101,7 +89,7 @@ def main():
         train=True,
         transform=transforms.Compose(
             [
-                transforms.Resize((224, 224)),
+                transforms.Resize((32, 32)),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 normalize,
@@ -110,7 +98,7 @@ def main():
     )
     val_dataset = datasets.CIFAR10(
         root=cfg.data_root, train=False, transform=transforms.Compose([
-            transforms.Resize((224, 224)),
+            transforms.Resize((32, 32)),
             transforms.ToTensor(),
             normalize,
         ])

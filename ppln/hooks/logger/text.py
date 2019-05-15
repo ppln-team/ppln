@@ -4,6 +4,7 @@ from collections import OrderedDict
 import torch
 
 from .utils import get_max_memory
+from ...utils.misc import master_only
 from .. import Hook
 
 
@@ -16,6 +17,7 @@ class TextLoggerHook(Hook):
     def before_run(self, runner):
         self.start_iter = runner.iter
 
+    @master_only
     def _log_info(self, log_dict, runner):
         if runner.mode == 'train':
             lr_str = ', '.join([f'{lr:.5f}' for lr in log_dict['lr']])
@@ -40,11 +42,10 @@ class TextLoggerHook(Hook):
                 val = f'{val:.4f}'
             log_items.append(f'{name}: {val}')
         log_str += ', '.join(log_items)
-        runner.logger.debug(log_str)
+        runner.logger.info(log_str)
 
     def log(self, runner):
         log_dict = OrderedDict()
-        # training mode if the output contains the key "time"
         mode = runner.mode
         log_dict['mode'] = mode
         log_dict['epoch'] = runner.epoch + 1

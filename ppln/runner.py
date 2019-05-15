@@ -50,14 +50,12 @@ class Runner:
         else:
             return optimizer
 
-    def init_logger(self, log_dir=None, silent=True):
-        # TODO silent
-        assert isinstance(silent, bool)
+    def init_logger(self, log_dir=None):
         logger = logging.getLogger(__name__)
-        logger.setLevel((logging.DEBUG, logging.INFO)[silent])
+        logger.setLevel(logging.INFO)
         if log_dir and self.rank == 0:
             log_file = osp.join(log_dir, f'{self.timestamp}.log')
-            make_file_handler(logger, log_file, level=logging.DEBUG)
+            make_file_handler(logger, log_file, level=logging.INFO)
         return logger
 
     @property
