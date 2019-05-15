@@ -47,31 +47,6 @@ def add_args(parser, cfg, prefix=''):
 
 
 class Config(object):
-    """A facility for config and config files.
-
-    It supports common file formats as configs: python/json/yaml. The interface
-    is the same as a dict object and also allows access config values as
-    attributes.
-
-    Example:
-        >>> cfg = Config(dict(a=1, b=dict(b1=[0, 1])))
-        >>> cfg.a
-        1
-        >>> cfg.b
-        {'b1': [0, 1]}
-        >>> cfg.b.b1
-        [0, 1]
-        >>> cfg = Config.fromfile('tests/data/config/a.py')
-        >>> cfg.filename
-        "/home/kchen/projects/mmcv/tests/data/config/a.py"
-        >>> cfg.item4
-        'test'
-        >>> cfg
-        "Config [path: /home/kchen/projects/mmcv/tests/data/config/a.py]: "
-        "{'item1': [1, 2], 'item2': {'a': 0}, 'item3': True, 'item4': 'test'}"
-
-    """
-
     @staticmethod
     def fromfile(filename):
         filename = osp.abspath(osp.expanduser(filename))
@@ -89,8 +64,8 @@ class Config(object):
             sys.path.pop(0)
             cfg_dict = {name: value for name, value in mod.__dict__.items() if not name.startswith('__')}
         elif filename.endswith(('.yml', '.yaml', '.json')):
-            import mmcv
-            cfg_dict = mmcv.load(filename)
+            from ..fileio import io
+            cfg_dict = io.load(filename)
         else:
             raise IOError('Only py/yml/yaml/json type are supported now!')
         return Config(cfg_dict, filename=filename)

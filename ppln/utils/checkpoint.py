@@ -100,7 +100,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         meta = {}
     elif not isinstance(meta, dict):
         raise TypeError('meta must be a dict or None, but got {}'.format(type(meta)))
-    meta.update(mmcv_version=__version__, time=time.asctime())
+    meta.update(ppln_version=__version__, time=time.asctime())
 
     os.makedirs(osp.dirname(filename), exist_ok=True)
     if hasattr(model, 'module'):
