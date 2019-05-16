@@ -23,7 +23,7 @@ run-dl2: ## Run container in omen
 		-itd \
 		--ipc=host \
 		--name=$(CONTAINER_NAME) \
-		-v /mnt/ssd2/amirassov/ppln/data:/data \
+		-v /mnt/hdd1/amirassov/dumps:/dumps \
 		-v $(shell pwd):/ppln $(APP_NAME) bash
 
 exec: ## Run a bash in a running container

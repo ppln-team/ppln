@@ -30,8 +30,7 @@ class ProgressBarLoggerHook(Hook):
         text_color = (Fore.CYAN, Fore.GREEN)[runner.train_mode]
         epoch_text = f'{epoch_color}epoch:{Style.RESET_ALL} {runner.epoch + 1:<4}'
         log_items = [
-            (' ' * 11, epoch_text)[runner.train_mode],
-            f'{mode_color}{runner.mode:<5}{Style.RESET_ALL}',
+            (' ' * 11, epoch_text)[runner.train_mode], f'{mode_color}{runner.mode:<5}{Style.RESET_ALL}',
             f'{text_color}lr:{Style.RESET_ALL} {", ".join([f"{lr:.3e}" for lr in runner.lr])}'
         ]
         for name, value in runner.log_buffer.output.items():

@@ -5,7 +5,7 @@ from collections import OrderedDict
 import torch
 import torch.multiprocessing as mp
 import torch.nn.functional as F
-from torch.nn.parallel import DataParallel, DistributedDataParallel
+from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torchvision import datasets, transforms
@@ -15,6 +15,9 @@ from torchvision.models import resnet
 from ppln.utils.config import Config
 from ppln.hooks import DistSamplerSeedHook
 from ppln.runner import Runner
+
+from imet.wrappers import TwoHeadSEResNeXt
+from imet.losses import MultiLabelSoftMax
 
 
 def accuracy(output, target, topk=(1, )):
@@ -36,11 +39,13 @@ def accuracy(output, target, topk=(1, )):
 
 def batch_processor(model, data, train_mode, device):
     assert isinstance(train_mode, bool)
-    img, label = data
-    label = label.to(device, non_blocking=True)
-    pred = model(img)
-    loss = F.cross_entropy(pred, label)
-    acc_top1, acc_top5 = accuracy(pred, label, topk=(1, 5))
+    image, tag_labels, culture_labels = data['image'], data['tag_labels'], data['culture_labels']
+
+    tag_loss, culture_loss = model()
+
+    predictions = model(image)
+    loss = F.cross_entropy(predictions, label)
+    acc_top1, acc_top5 = accuracy(predictions, label, topk=(1, 5))
 
     values = OrderedDict()
     values['loss'] = loss.item()
@@ -60,9 +65,8 @@ def init_dist(backend='nccl', **kwargs):
 
 
 def parse_args():
-    parser = ArgumentParser(description='Train CIFAR-10 classification')
+    parser = ArgumentParser(description='Train')
     parser.add_argument('config', help='train config file path')
-    parser.add_argument('--launcher', choices=['none', 'pytorch'], default='none', help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
     return parser.parse_args()
 
@@ -72,14 +76,9 @@ def main():
 
     cfg = Config.fromfile(args.config)
 
-    # init distributed environment if necessary
-    if args.launcher == 'none':
-        dist = False
-    else:
-        dist = True
-        init_dist(**cfg.dist_params)
-        world_size = torch.distributed.get_world_size()
-        rank = torch.distributed.get_rank()
+    init_dist(**cfg.dist_params)
+    world_size = torch.distributed.get_world_size()
+    rank = torch.distributed.get_rank()
 
     # build datasets and dataloaders
     normalize = transforms.Normalize(mean=cfg.mean, std=cfg.std)
@@ -104,23 +103,16 @@ def main():
             normalize,
         ])
     )
-    if dist:
-        num_workers = cfg.data_workers
-        assert cfg.batch_size % world_size == 0
-        batch_size = cfg.batch_size // world_size
-        train_sampler = DistributedSampler(train_dataset, world_size, rank)
-        val_sampler = DistributedSampler(val_dataset, world_size, rank)
-        shuffle = False
-    else:
-        num_workers = cfg.data_workers * len(cfg.gpus)
-        batch_size = cfg.batch_size
-        train_sampler = None
-        val_sampler = None
-        shuffle = True
+    num_workers = cfg.data_workers
+    assert cfg.batch_size % world_size == 0
+    batch_size = cfg.batch_size // world_size
+    train_sampler = DistributedSampler(train_dataset, world_size, rank)
+    val_sampler = DistributedSampler(val_dataset, world_size, rank)
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
-        shuffle=shuffle,
+        shuffle=False,
         sampler=train_sampler,
         num_workers=num_workers,
         pin_memory=False
@@ -136,13 +128,11 @@ def main():
 
     # build model
     model = getattr(resnet, cfg.model)(pretrained=True)
-    if dist:
-        model = SyncBatchNorm.convert_sync_batchnorm(model)
-        model = DistributedDataParallel(model.cuda(), device_ids=[torch.cuda.current_device()])
-    else:
-        model = DataParallel(model, device_ids=cfg.gpus)
+    model = SyncBatchNorm.convert_sync_batchnorm(model)
+    model = DistributedDataParallel(model.cuda(), device_ids=[torch.cuda.current_device()])
 
     device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
+
     # build runner and register hooks
     runner = Runner(model, cfg.optimizer, batch_processor, device, cfg.work_dir)
     runner.register_hooks(
@@ -151,8 +141,7 @@ def main():
         checkpoint_config=cfg.checkpoint_config,
         log_config=cfg.log_config
     )
-    if dist:
-        runner.register_hook(DistSamplerSeedHook())
+    runner.register_hook(DistSamplerSeedHook())
 
     # load param (if necessary) and run
     if cfg.get('resume_from') is not None:
