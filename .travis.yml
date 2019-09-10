@@ -3,3 +3,5 @@ python:
   - "3.7"
 install:
   - python setup.py sdist
+script:
+  - python setup.py test

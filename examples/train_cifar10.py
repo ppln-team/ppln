@@ -87,7 +87,7 @@ def main():
         train=True,
         transform=transforms.Compose(
             [
-                transforms.Resize((128, 128)),
+                transforms.Resize((32, 32)),
                 transforms.RandomHorizontalFlip(),
                 transforms.ToTensor(),
                 normalize,
@@ -98,7 +98,7 @@ def main():
         root=cfg.data_root,
         train=False,
         transform=transforms.Compose([
-            transforms.Resize((128, 128)),
+            transforms.Resize((32, 32)),
             transforms.ToTensor(),
             normalize,
         ])

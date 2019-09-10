@@ -1,21 +1,34 @@
-import setuptools
+import codecs
+import os
+import re
+from setuptools import setup, find_packages
 
-with open('README.md', 'r') as fh:
-    long_description = fh.read()
 
-setuptools.setup(
+def get_absolute_path(*args):
+    """Transform relative pathnames into absolute pathnames."""
+    return os.path.join(os.path.dirname(os.path.abspath(__file__)), *args)
+
+
+def get_contents(*args):
+    """Get the contents of a file relative to the source distribution directory."""
+    with codecs.open(get_absolute_path(*args), 'r', 'UTF-8') as handle:
+        return handle.read()
+
+
+def get_version(*args):
+    """Extract the version number from a Python module."""
+    contents = get_contents(*args)
+    metadata = dict(re.findall('__([a-z]+)__ = [\'"]([^\'"]+)', contents))
+    return metadata['version']
+
+
+setup(
     name='ppln',
-    version='0.2',
+    version=get_version('ppln', '__init__.py'),
     author='Miras Amir',
     author_email='amirassov@gmail.com',
-    description='Universal PyTorch runner',
-    long_description=long_description,
+    description='PyTorch runner',
     long_description_content_type='text/markdown',
     url='https://github.com/amirassov/ppln',
-    packages=setuptools.find_packages(),
-    classifiers=[
-        'Programming Language :: Python :: 3',
-        'License :: OSI Approved :: MIT License',
-        'Operating System :: OS Independent',
-    ],
+    packages=find_packages()
 )
