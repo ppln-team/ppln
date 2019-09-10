@@ -35,7 +35,9 @@ setup(
         'torch>=1.1.0',
         'torchvision>=0.2.2',
         'tqdm>=4.31.1',
-        'PyYAML>=5.1'
+        'PyYAML>=5.1',
+        'colorama>=0.4.1',
+        'addict>=2.2.1'
     ],
     setup_requires=['pytest-runner'],
     python_requires='>=3.6.0'
