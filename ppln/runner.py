@@ -1,13 +1,14 @@
-import torch
 import os
 import os.path as osp
-from . import hooks
-from .hooks import Hook, get_priority, OptimizerHook, CheckpointHook, IterTimerHook, lr_scheduler, LogBufferHook
 
-from .utils.misc import object_from_dict, get_dist_info
-from .utils.log_buffer import LogBuffer
+import torch
+
+from . import hooks
+from .factory import make_logger, make_model, make_optimizer
+from .hooks import CheckpointHook, Hook, IterTimerHook, LogBufferHook, OptimizerHook, get_priority, lr_scheduler
 from .utils.checkpoint import load_checkpoint
-from .factory import make_model, make_optimizer, make_logger
+from .utils.log_buffer import LogBuffer
+from .utils.misc import get_dist_info, object_from_dict
 
 
 class Runner:
@@ -95,9 +96,7 @@ class Runner:
     def run_batch(self, batch, **kwargs):
         self.call_hook(f'before_{self.mode}_iter')
         with torch.set_grad_enabled(self.train_mode):
-            self.outputs = self.batch_processor(
-                self.model, batch, train_mode=self.train_mode, device=self.device, **kwargs
-            )
+            self.outputs = self.batch_processor(self.model, batch, mode=self.mode, device=self.device, **kwargs)
             self.log_buffer.update(self.outputs['values'], self.outputs['num_samples'])
         self.call_hook(f'after_{self.mode}_iter')
 
@@ -150,7 +149,9 @@ class Runner:
         if checkpoint_config is None:
             checkpoint_config = {}
         self.register_hook(object_from_dict(lr_config, lr_scheduler))
-        self.register_hook(OptimizerHook(**optimizer_config))
+        self.register_hook(
+            optimizer_config if isinstance(optimizer_config, Hook) else OptimizerHook(**optimizer_config)
+        )
         self.register_hook(IterTimerHook())
         self.register_hook(LogBufferHook(), priority='LOW')
         for hook_params in log_config['hooks']:

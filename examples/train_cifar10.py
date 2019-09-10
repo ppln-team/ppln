@@ -5,16 +5,16 @@ from collections import OrderedDict
 import torch
 import torch.multiprocessing as mp
 import torch.nn.functional as F
+from torch.nn import SyncBatchNorm
 from torch.nn.parallel import DataParallel, DistributedDataParallel
 from torch.utils.data import DataLoader
 from torch.utils.data.distributed import DistributedSampler
 from torchvision import datasets, transforms
-from torch.nn import SyncBatchNorm
 from torchvision.models import resnet
 
-from ppln.utils.config import Config
 from ppln.hooks import DistSamplerSeedHook
 from ppln.runner import Runner
+from ppln.utils.config import Config
 
 
 def accuracy(output, target, topk=(1, )):
@@ -34,8 +34,7 @@ def accuracy(output, target, topk=(1, )):
         return res
 
 
-def batch_processor(model, data, train_mode, device):
-    assert isinstance(train_mode, bool)
+def batch_processor(model, data, mode, device):
     img, label = data
     label = label.to(device, non_blocking=True)
     pred = model(img)

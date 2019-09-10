@@ -24,4 +24,4 @@ load_from = None
 
 # logging settings
 log_level = 'INFO'
-log_config = dict(hooks=[dict(type='ProgressBarLoggerHook'), dict(type='TextLoggerHook')])
+log_config = dict(hooks=[dict(type='ProgressBarLoggerHook', bar_width=40), dict(type='TextLoggerHook')])

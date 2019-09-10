@@ -1,17 +1,20 @@
 import sys
+
 from colorama import Fore, Style
-from ..hook import Hook
+
 from ...utils.misc import master_only
 from ...utils.progress_bar import ProgressBar
+from ..hook import Hook
 
 
 class ProgressBarLoggerHook(Hook):
-    def __init__(self):
+    def __init__(self, bar_width):
         super(ProgressBarLoggerHook, self).__init__()
+        self.bar_width = bar_width
         self.bar = None
 
     def before_epoch(self, runner):
-        self.bar = ProgressBar(task_num=len(runner.data_loader))
+        self.bar = ProgressBar(task_num=len(runner.data_loader), bar_width=self.bar_width)
 
     @master_only
     def after_epoch(self, runner):
