@@ -3,5 +3,10 @@ python:
   - "3.7"
 install:
   - python setup.py sdist
+  - pip install flake8 yapf isort
+before_script:
+  - flake8
+  - isort -rc --diff ppln/ tests/ examples/
+  - yapf -r -d ppln/ tests/ examples/
 script:
   - python setup.py test
