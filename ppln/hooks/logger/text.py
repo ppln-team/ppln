@@ -3,9 +3,9 @@ from collections import OrderedDict
 
 import torch
 
-from .utils import get_max_memory
 from ...utils.misc import master_only
 from .. import Hook
+from .utils import get_max_memory
 
 
 class TextLoggerHook(Hook):

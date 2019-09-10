@@ -1,5 +1,7 @@
 from math import cos, pi
+
 from torch.optim.lr_scheduler import ReduceLROnPlateau
+
 from .hook import Hook
 
 

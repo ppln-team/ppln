@@ -1,9 +1,11 @@
-from collections import OrderedDict
-import time
-import torch
-from ppln import __version__
 import os
 import os.path as osp
+import time
+from collections import OrderedDict
+
+import torch
+
+from ppln import __version__
 
 
 def load_state_dict(module, state_dict, strict=False):

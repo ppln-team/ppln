@@ -1,7 +1,7 @@
 import os.path as osp
 
-from .. import Hook
 from ...utils.misc import master_only
+from .. import Hook
 
 
 class TensorboardLoggerHook(Hook):

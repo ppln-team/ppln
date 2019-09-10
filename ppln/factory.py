@@ -1,8 +1,9 @@
-import os.path as osp
-import torch
 import logging
+import os.path as osp
 
-from .utils.misc import object_from_dict, get_dist_info, get_timestamp
+import torch
+
+from .utils.misc import get_dist_info, get_timestamp, object_from_dict
 
 
 def make_model(config, device) -> torch.nn.Module:
@@ -24,6 +25,7 @@ def make_file_handler(logger, filename=None, mode='w', level=logging.INFO):
 
 
 def make_logger(log_dir):
+    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
     rank, _ = get_dist_info()
     timestamp = get_timestamp()
     logger = logging.getLogger(__name__)
