@@ -30,5 +30,13 @@ setup(
     description='PyTorch runner',
     long_description_content_type='text/markdown',
     url='https://github.com/amirassov/ppln',
-    packages=find_packages()
+    packages=find_packages(),
+    install_requires=[
+        'torch>=1.1.0',
+        'torchvision>=0.2.2',
+        'tqdm>=4.31.1',
+        'PyYAML>=5.1'
+    ],
+    setup_requires=['pytest-runner'],
+    python_requires='>=3.6.0'
 )
