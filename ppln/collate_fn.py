@@ -10,7 +10,6 @@ class FilteringCollateFn:
     Only adds them to list.
     Supports only key-value format batches
     """
-
     def __init__(self, *keys):
         """
         :param keys: Keys having values that will not be
