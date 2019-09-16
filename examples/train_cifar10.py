@@ -33,9 +33,9 @@ def accuracy(output, target, topk=(1, )):
         return res
 
 
-def batch_processor(model, data, mode, device):
+def batch_processor(model, data, mode):
     img, label = data
-    label = label.to(device, non_blocking=True)
+    label = label.cuda(non_blocking=True)
     pred = model(img)
     loss = F.cross_entropy(pred, label)
     acc_top1, acc_top5 = accuracy(pred, label, topk=(1, 5))
@@ -131,9 +131,8 @@ def main():
     else:
         model = DataParallel(model, device_ids=cfg.gpus)
 
-    device = torch.device('cuda' if torch.cuda.is_available() else 'cpu')
     # build runner and register hooks
-    runner = Runner(model, cfg.optimizer, batch_processor, device, cfg.work_dir)
+    runner = Runner(model, cfg.optimizer, batch_processor, cfg.work_dir)
     runner.register_hooks(
         lr_config=cfg.lr_config,
         optimizer_config=cfg.optimizer_config,
