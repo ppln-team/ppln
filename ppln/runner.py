@@ -12,11 +12,10 @@ from .utils.misc import get_dist_info, object_from_dict
 
 
 class Runner:
-    def __init__(self, model, optimizer, batch_processor, device, work_dir, logger=None):
+    def __init__(self, model, optimizer, batch_processor, work_dir, logger=None):
         self.work_dir = osp.abspath(work_dir)
         os.makedirs(self.work_dir, exist_ok=True)
 
-        self.device = device
         self.work_dir = work_dir
         self.batch_processor = batch_processor
 
@@ -39,7 +38,7 @@ class Runner:
 
     def init_model(self, model):
         if isinstance(model, dict):
-            return make_model(model, self.device)
+            return make_model(model)
         return model
 
     def init_optimizer(self, optimizer):
@@ -96,7 +95,7 @@ class Runner:
     def run_batch(self, batch, **kwargs):
         self.call_hook(f'before_{self.mode}_iter')
         with torch.set_grad_enabled(self.train_mode):
-            self.outputs = self.batch_processor(self.model, batch, mode=self.mode, device=self.device, **kwargs)
+            self.outputs = self.batch_processor(self.model, batch, mode=self.mode, **kwargs)
             self.log_buffer.update(self.outputs['values'], self.outputs['num_samples'])
         self.call_hook(f'after_{self.mode}_iter')
 

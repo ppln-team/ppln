@@ -6,9 +6,9 @@ import torch
 from .utils.misc import get_dist_info, get_timestamp, object_from_dict
 
 
-def make_model(config, device) -> torch.nn.Module:
+def make_model(config) -> torch.nn.Module:
     model = object_from_dict(config)
-    return model.to(device)
+    return model.cuda()
 
 
 def make_optimizer(model: torch.nn.Module, config: dict) -> torch.optim.Optimizer:
