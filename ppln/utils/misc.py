@@ -1,14 +1,26 @@
 import functools
+import os
 import pydoc
 import time
 from getpass import getuser
 from socket import gethostname
 
+import torch
 import torch.distributed as dist
+import torch.multiprocessing as mp
 
 
 def get_host_info():
     return '{}@{}'.format(getuser(), gethostname())
+
+
+def init_dist(backend='nccl', **kwargs):
+    if mp.get_start_method(allow_none=True) is None:
+        mp.set_start_method('spawn')
+    rank = int(os.environ['RANK'])
+    num_gpus = torch.cuda.device_count()
+    torch.cuda.set_device(rank % num_gpus)
+    torch.distributed.init_process_group(backend=backend, **kwargs)
 
 
 def get_dist_info():

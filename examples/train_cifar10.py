@@ -1,9 +1,7 @@
-import os
 from argparse import ArgumentParser
 from collections import OrderedDict
 
 import torch
-import torch.multiprocessing as mp
 import torch.nn.functional as F
 from torch.nn import SyncBatchNorm
 from torch.nn.parallel import DataParallel, DistributedDataParallel
@@ -15,6 +13,7 @@ from torchvision.models import resnet
 from ppln.hooks import DistSamplerSeedHook
 from ppln.runner import Runner
 from ppln.utils.config import Config
+from ppln.utils.misc import init_dist
 
 
 def accuracy(output, target, topk=(1, )):
@@ -47,15 +46,6 @@ def batch_processor(model, data, mode, device):
     values['acc_top5'] = acc_top5.item()
     outputs = dict(loss=loss, values=values, num_samples=img.size(0))
     return outputs
-
-
-def init_dist(backend='nccl', **kwargs):
-    if mp.get_start_method(allow_none=True) is None:
-        mp.set_start_method('spawn')
-    rank = int(os.environ['RANK'])
-    num_gpus = torch.cuda.device_count()
-    torch.cuda.set_device(rank % num_gpus)
-    torch.distributed.init_process_group(backend=backend, **kwargs)
 
 
 def parse_args():
