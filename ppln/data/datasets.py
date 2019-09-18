@@ -56,11 +56,11 @@ class ClassFolderDataset(DatasetFolder):
 
     def __getitem__(self, index):
         path, idx = self.samples[index]
-        target = self.classes[idx]
+        cls = self.classes[idx]
         image = self.loader(path)
+        sample = {'image': image, 'class': cls, 'name': osp.basename(path)}
         if self.target_transform is not None:
-            target = self.target_transform(target)
-        sample = {'image': image, 'target': target, 'name': path}
+            sample['target'] = self.target_transform(cls)
         if self.transform is not None:
             sample = self.transform(**sample)
         return sample
