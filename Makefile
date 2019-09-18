@@ -44,3 +44,8 @@ test:
 
 install:
 	python setup.py install
+
+format:
+	unify --in-place --recursive .
+	yapf --in-place --recursive .
+	isort --recursive .
