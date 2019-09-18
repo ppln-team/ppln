@@ -18,10 +18,10 @@ class WeightedRandomDistributedSampler(Sampler):
         self.dataset = dataset
         self.weights = weights
         self.replacement = replacement
-        self.num_samples = int(math.ceil(num_samples) * 1.0 / self.num_replicas)
         self.num_replicas = num_replicas
         self.rank = rank
         self.epoch = 0
+        self.num_samples = int(math.ceil(num_samples) * 1.0 / self.num_replicas)
         self.total_size = self.num_samples * self.num_replicas
 
     def __iter__(self):
