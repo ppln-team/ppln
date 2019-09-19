@@ -35,6 +35,7 @@ stop: ## Stop and remove a running container
 clean:
 	[ -e ppln.egg-info ] && rm -r ppln.egg-info ||:
 	[ -e build ] && rm -r build ||:
+	[ -e .eggs ] && rm -r .eggs ||:
 	[ -e dist ] && rm -r dist ||:
 	[ -e .pytest_cache ] && rm -r .pytest_cache ||:
 	python setup.py clean
