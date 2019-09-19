@@ -33,7 +33,7 @@ setup(
     url='https://github.com/amirassov/ppln',
     packages=find_packages(),
     install_requires=[
-        'torchvision<0.4.0', 'torch>=1.1', 'tqdm', 'PyYAML', 'colorama', 'addict', 'jpeg4py',
+        'torchvision', 'torch>=1.1', 'tqdm', 'PyYAML', 'colorama', 'addict', 'jpeg4py',
         'opencv-python'
     ],
     setup_requires=['pytest-runner'],
