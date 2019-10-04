@@ -76,7 +76,7 @@ class Runner:
         self.max_epochs = max_epochs
 
         self.call_hook('before_run')
-        for self.epoch in range(max_epochs):
+        for self.epoch in range(self.epoch, max_epochs):
             for self.mode, self.data_loader in data_loaders.items():
                 self.run_mode(**kwargs)
         self.call_hook('after_run')
