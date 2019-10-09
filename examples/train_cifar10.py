@@ -61,15 +61,6 @@ def main():
 
     cfg = Config.fromfile(args.config)
 
-    # init distributed environment if necessary
-    if args.launcher == 'none':
-        dist = False
-    else:
-        dist = True
-        init_dist(**cfg.dist_params)
-        world_size = torch.distributed.get_world_size()
-        rank = torch.distributed.get_rank()
-
     # build datasets and dataloaders
     normalize = transforms.Normalize(mean=cfg.mean, std=cfg.std)
     train_dataset = datasets.CIFAR10(
@@ -93,19 +84,34 @@ def main():
             normalize,
         ])
     )
-    if dist:
-        num_workers = cfg.data_workers
-        assert cfg.batch_size % world_size == 0
-        batch_size = cfg.batch_size // world_size
-        train_sampler = DistributedSampler(train_dataset, world_size, rank)
-        val_sampler = DistributedSampler(val_dataset, world_size, rank)
-        shuffle = False
-    else:
-        num_workers = cfg.data_workers * len(cfg.gpus)
-        batch_size = cfg.batch_size
+
+    # build model
+    model = getattr(resnet, cfg.model)(pretrained=True)
+
+    # init distributed environment if necessary
+    if args.launcher == 'none':
+        num_workers = cfg.workers_per_gpu * len(cfg.gpus)
+        batch_size = cfg.images_per_gpu * len(cfg.gpus)
         train_sampler = None
         val_sampler = None
         shuffle = True
+
+        model = DataParallel(model, device_ids=cfg.gpus)
+        dist = False
+    else:
+        init_dist(**cfg.dist_params)
+        world_size = torch.distributed.get_world_size()
+        rank = torch.distributed.get_rank()
+        num_workers = cfg.workers_per_gpu
+        batch_size = cfg.images_per_gpu
+        train_sampler = DistributedSampler(train_dataset, world_size, rank)
+        val_sampler = DistributedSampler(val_dataset, world_size, rank)
+        shuffle = False
+
+        model = SyncBatchNorm.convert_sync_batchnorm(model)
+        model = DistributedDataParallel(model.cuda(), device_ids=[torch.cuda.current_device()])
+        dist = True
+
     train_loader = DataLoader(
         train_dataset,
         batch_size=batch_size,
@@ -122,14 +128,6 @@ def main():
         num_workers=num_workers,
         pin_memory=False
     )
-
-    # build model
-    model = getattr(resnet, cfg.model)(pretrained=True)
-    if dist:
-        model = SyncBatchNorm.convert_sync_batchnorm(model)
-        model = DistributedDataParallel(model.cuda(), device_ids=[torch.cuda.current_device()])
-    else:
-        model = DataParallel(model, device_ids=cfg.gpus)
 
     # build runner and register hooks
     runner = Runner(model, cfg.optimizer, batch_processor, cfg.work_dir)

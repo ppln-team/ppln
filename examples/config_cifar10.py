@@ -4,7 +4,8 @@ model = 'resnet18'
 data_root = '/data/cifar10'
 mean = [0.4914, 0.4822, 0.4465]
 std = [0.2023, 0.1994, 0.2010]
-batch_size = 256
+images_per_gpu = 64
+workers_per_gpu = 4  # data workers per gpu
 
 # optimizer and learning rate
 optimizer = dict(type='torch.optim.Adam', lr=3e-3)
@@ -15,9 +16,7 @@ lr_config = dict(type='ReduceLROnPlateauHook', metric_name='loss', mode='min', p
 work_dir = '/data/demo'
 gpus = range(1)
 dist_params = dict(backend='nccl')
-data_workers = 4  # data workers per gpu
 checkpoint_config = dict(num_checkpoints=5, metric_name='acc_top5', mode='max')  # save checkpoint at every epoch
-workflow = [('train', 1), ('val', 1)]
 total_epochs = 20
 resume_from = None
 load_from = None

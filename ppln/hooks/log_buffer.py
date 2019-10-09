@@ -8,9 +8,6 @@ from .hook import Hook
 
 
 class LogBufferHook(Hook):
-    def __init__(self, distributed=True):
-        self.distributed = distributed
-
     @staticmethod
     def sync(runner):
         if runner.rank == 0:
@@ -42,6 +39,6 @@ class LogBufferHook(Hook):
         runner.log_buffer.average()
 
     def after_epoch(self, runner):
-        if self.distributed:
+        if dist.is_initialized():
             self.sync(runner)
         runner.log_buffer.average()
