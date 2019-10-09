@@ -23,8 +23,12 @@ class CheckpointHook(Hook):
         if not self.out_dir:
             self.out_dir = runner.work_dir
 
-    def current_filename(self, runner):
-        return osp.join(self.out_dir, f'epoch_{runner.epoch + 1}.pth')
+    @staticmethod
+    def current_filename(runner):
+        return f'epoch_{runner.epoch + 1}.pth'
+
+    def current_filepath(self, runner):
+        return osp.join(self.out_dir, self.current_filename(runner))
 
     @master_only
     def after_val_epoch(self, runner):
@@ -34,7 +38,7 @@ class CheckpointHook(Hook):
             metric *= -1
 
         if self._is_update(metric):
-            self._checkpoints.put((metric, self.current_filename(runner)))
+            self._checkpoints.put((metric, self.current_filepath(runner)))
             self._save_checkpoint(runner)
         if self._best_metric < metric:
             self._best_metric = metric
@@ -54,13 +58,13 @@ class CheckpointHook(Hook):
         return False
 
     def _save_link(self, runner):
-        linkname = osp.join(self.out_dir, 'best.pth')
-        if os.path.lexists(linkname):
-            os.remove(linkname)
-        os.symlink(self.current_filename(runner), linkname)
+        linkpath = osp.join(self.out_dir, 'best.pth')
+        if os.path.lexists(linkpath):
+            os.remove(linkpath)
+        os.symlink(self.current_filename(runner), linkpath)
 
     def _save_checkpoint(self, runner):
         self.meta.update(epoch=runner.epoch + 1, iter=runner.iter)
 
         optimizer = runner.optimizer if self.save_optimizer else None
-        save_checkpoint(runner.model, self.current_filename(runner), optimizer=optimizer, meta=self.meta)
+        save_checkpoint(runner.model, self.current_filepath(runner), optimizer=optimizer, meta=self.meta)
