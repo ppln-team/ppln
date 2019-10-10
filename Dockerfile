@@ -50,5 +50,4 @@ RUN pip install --no-cache-dir \
     addict \
     colorama
 
-CMD mkdir -p /workspace
-WORKDIR /workspace
+WORKDIR /ppln

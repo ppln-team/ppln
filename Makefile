@@ -10,20 +10,12 @@ help: ## This help.
 build:  ## Build the container
 	nvidia-docker build -t $(APP_NAME) .
 
-run-omen: ## Run container in omen
+run: ## Run container in omen
 	nvidia-docker run \
 		-itd \
 		--ipc=host \
 		--name=$(CONTAINER_NAME) \
 		-v /home/videoanalytics/data:/data \
-		-v $(shell pwd):/ppln $(APP_NAME) bash
-
-run-dl2: ## Run container in omen
-	nvidia-docker run \
-		-itd \
-		--ipc=host \
-		--name=$(CONTAINER_NAME) \
-		-v /mnt/hdd1/amirassov/dumps:/dumps \
 		-v $(shell pwd):/ppln $(APP_NAME) bash
 
 exec: ## Run a bash in a running container
