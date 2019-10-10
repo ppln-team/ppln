@@ -1,6 +1,5 @@
-from torchvision import datasets
 import torch
-from ppln.data.datasets import cv2_loader
+from torchvision import datasets
 
 
 class CustomCIFAR10(datasets.CIFAR10):

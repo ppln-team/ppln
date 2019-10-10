@@ -23,9 +23,11 @@ train_transforms = pre_transforms + augmentations + post_transforms
 val_transforms = pre_transforms + post_transforms
 
 # apex settings
-opt_level = 'O1'
-keep_batchnorm_fp32 = None
+apex = True
+opt_level = 'O2'
+keep_batchnorm_fp32 = True
 loss_scale = 512.0
+delay_allreduce = True
 
 # optimizer and learning rate
 optimizer = dict(type='torch.optim.Adam', lr=3e-3)

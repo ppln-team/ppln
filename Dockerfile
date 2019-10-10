@@ -50,4 +50,9 @@ RUN pip install --no-cache-dir \
     addict \
     colorama
 
+RUN git clone https://github.com/NVIDIA/apex && \
+    cd apex && \
+    pip install -v --no-cache-dir --global-option="--cpp_ext" --global-option="--cuda_ext" ./ && \
+    cd ..
+
 WORKDIR /ppln
