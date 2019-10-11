@@ -4,15 +4,18 @@ import os.path as osp
 import torch.distributed as dist
 
 from ..fileio import io
+from ..utils.misc import get_dist_info
 from .hook import Hook
 
 
 class LogBufferHook(Hook):
     @staticmethod
     def sync(runner):
-        if runner.rank == 0:
+        rank, world_size = get_dist_info()
+
+        if rank == 0:
             dist.barrier()
-            for i in range(1, runner.world_size):
+            for i in range(1, world_size):
                 tmp_file = osp.join(runner.work_dir, f'tmp_{i}.pkl')
                 tmp_results = io.load(tmp_file)
                 n_history = tmp_results['n_history']
@@ -22,7 +25,7 @@ class LogBufferHook(Hook):
                     runner.log_buffer.n_history[key].extend(n_history[key])
                 os.remove(tmp_file)
         else:
-            tmp_file = osp.join(runner.work_dir, f'tmp_{runner.rank}.pkl')
+            tmp_file = osp.join(runner.work_dir, f'tmp_{rank}.pkl')
             io.dump(
                 {
                     'value_history': runner.log_buffer.value_history,

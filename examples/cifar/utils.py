@@ -2,8 +2,6 @@ from collections import OrderedDict
 
 import torch
 import torch.nn.functional as F
-from apex.parallel import DistributedDataParallel as ApexDDP
-from apex.parallel import convert_syncbn_model
 from torch.nn import SyncBatchNorm
 from torch.nn.parallel import DistributedDataParallel
 from torch.utils.data import DataLoader
@@ -11,6 +9,7 @@ from torch.utils.data.distributed import DistributedSampler
 
 from cifar.dataset import CustomCIFAR10
 from ppln.data.transforms import build_albumentations
+from ppln.hooks import ApexOptimizerHook
 from ppln.utils.misc import get_dist_info
 
 
@@ -61,18 +60,34 @@ def build_dataloader(dataset, images_per_gpu, workers_per_gpu, **kwargs):
     )
 
 
-def build_sync_bn(model, apex):
-    if apex:
-        return convert_syncbn_model(model)
-    else:
-        return SyncBatchNorm.convert_sync_batchnorm(model)
+def build_data(data_root, train_transforms, val_transforms, images_per_gpu, workers_per_gpu):
+    train_dataset = build_dataset(data_root=data_root, transforms=train_transforms, train=True)
+    val_dataset = build_dataset(data_root=data_root, transforms=val_transforms, train=False)
+
+    train_loader = build_dataloader(train_dataset, images_per_gpu, workers_per_gpu)
+    val_loader = build_dataloader(val_dataset, images_per_gpu, workers_per_gpu)
+    return train_loader, val_loader
 
 
-def build_dataparallel(model, apex, sync_bn, **kwargs):
+def build_default_model(model, sync_bn):
     if sync_bn:
-        model = build_sync_bn(model, apex=True)
-    if apex:
-        model = ApexDDP(model, delay_allreduce=kwargs['delay_allreduce'])
-    else:
-        model = DistributedDataParallel(model, device_ids=kwargs['device_ids'])
+        model = SyncBatchNorm.convert_sync_batchnorm(model)
+    model = DistributedDataParallel(model, device_ids=[torch.cuda.current_device()])
     return model
+
+
+def build_apex(
+    model, optimizer, optimizer_config, sync_bn, opt_level, keep_batchnorm_fp32, loss_scale, delay_allreduce
+):
+    from apex import amp
+    from apex.parallel import DistributedDataParallel as ApexDDP
+    from apex.parallel import convert_syncbn_model
+
+    model, optimizer = amp.initialize(
+        model, optimizer, opt_level=opt_level, keep_batchnorm_fp32=keep_batchnorm_fp32, loss_scale=loss_scale
+    )
+    if sync_bn:
+        model = convert_syncbn_model(model)
+    model = ApexDDP(model, delay_allreduce=delay_allreduce)
+    optimizer_hook = ApexOptimizerHook(**optimizer_config)
+    return model, optimizer, optimizer_hook

@@ -1,5 +1,4 @@
 import os
-import os.path as osp
 
 import torch
 
@@ -8,27 +7,19 @@ from .factory import make_logger, make_model, make_optimizer
 from .hooks import CheckpointHook, Hook, IterTimerHook, LogBufferHook, OptimizerHook, get_priority, lr_scheduler
 from .utils.checkpoint import load_checkpoint
 from .utils.log_buffer import LogBuffer
-from .utils.misc import get_dist_info, object_from_dict
+from .utils.misc import object_from_dict
 
 
 class Runner:
     def __init__(self, model, optimizer, batch_processor, work_dir, logger=None):
-        self.work_dir = osp.abspath(work_dir)
-        os.makedirs(self.work_dir, exist_ok=True)
-
-        self.work_dir = work_dir
-        self.batch_processor = batch_processor
-
-        self.log_buffer = LogBuffer()
-        self.rank, self.world_size = get_dist_info()
-
+        self.work_dir = self.init_work_dir(work_dir)
         self.logger = self.init_logger(logger)
         self.model = self.init_model(model)
         self.optimizer = self.init_optimizer(optimizer)
 
-        self.data_loader = None
-        self.outputs = None
-        self.mode = None
+        self.batch_processor = batch_processor
+        self.log_buffer = LogBuffer()
+
         self.hooks = []
         self.epoch = 0
         self.iter = 0
@@ -36,7 +27,13 @@ class Runner:
         self.max_epochs = 0
         self.max_iters = 0
 
-    def init_model(self, model):
+    @staticmethod
+    def init_work_dir(work_dir):
+        os.makedirs(work_dir, exist_ok=True)
+        return work_dir
+
+    @staticmethod
+    def init_model(model):
         if isinstance(model, dict):
             return make_model(model)
         return model
