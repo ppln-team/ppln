@@ -13,7 +13,7 @@ from ppln.hooks import ApexOptimizerHook
 from ppln.utils.misc import get_dist_info
 
 
-def accuracy(output, target, topk=(1,)):
+def accuracy(output, target, topk=(1, )):
     """Computes the precision@k for the specified values of k"""
     with torch.no_grad():
         maxk = max(topk)
@@ -82,9 +82,7 @@ def build_apex(model, optimizer, optimizer_config, sync_bn, **kwargs):
     from apex.parallel import convert_syncbn_model
 
     delay_allreduce = kwargs.pop('delay_allreduce')
-    model, optimizer = amp.initialize(
-        model, optimizer, **kwargs
-    )
+    model, optimizer = amp.initialize(model, optimizer, **kwargs)
     if sync_bn:
         model = convert_syncbn_model(model)
     model = ApexDDP(model, delay_allreduce=delay_allreduce)
