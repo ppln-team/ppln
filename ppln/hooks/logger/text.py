@@ -1,11 +1,8 @@
 import datetime
 from collections import OrderedDict
 
-import torch
-
 from ...utils.misc import master_only
 from .. import Hook
-from .utils import get_max_memory
 
 
 class TextLoggerHook(Hook):
@@ -29,14 +26,13 @@ class TextLoggerHook(Hook):
                 eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
                 log_str += f'eta: {eta_str}, '
                 log_str += f'time: {log_dict["time"]:.3f}, data_time: {log_dict["data_time"]:.3f}, '
-                log_str += f'memory: {log_dict["memory"]}, '
         else:
             log_str = f'Epoch({log_dict["mode"]}) [{log_dict["epoch"]}][{log_dict["iter"]}]\t'
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack
             # these items have been in log_str
-            if name in ['mode', 'Epoch', 'iter', 'lr', 'time', 'data_time', 'memory', 'epoch']:
+            if name in ['mode', 'Epoch', 'iter', 'lr', 'time', 'data_time', 'epoch']:
                 continue
             if isinstance(val, float):
                 val = f'{val:.4f}'
@@ -54,9 +50,6 @@ class TextLoggerHook(Hook):
         if mode == 'train':
             log_dict['time'] = runner.log_buffer.output['time']
             log_dict['data_time'] = runner.log_buffer.output['data_time']
-            # statistic memory
-            if torch.cuda.is_available():
-                log_dict['memory'] = get_max_memory(runner)
         for name, val in runner.log_buffer.output.items():
             if name in ['time', 'data_time']:
                 continue

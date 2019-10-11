@@ -1,3 +1,4 @@
+from .apex import ApexOptimizerHook
 from .checkpoint import CheckpointHook
 from .dist import DistSamplerSeedHook
 from .hook import Hook
@@ -14,5 +15,6 @@ from .timer import IterTimerHook
 __all__ = [
     'CheckpointHook', 'DistSamplerSeedHook', 'Hook', 'LogBufferHook', 'ProgressBarLoggerHook', 'TensorboardLoggerHook',
     'TextLoggerHook', 'CosineLrSchedulerHook', 'ExpLrSchedulerHook', 'FixedLrSchedulerHook', 'InvLrSchedulerHook',
-    'LrSchedulerHook', 'PolyLrSchedulerHook', 'StepLrSchedulerHook', 'OptimizerHook', 'get_priority', 'IterTimerHook'
+    'LrSchedulerHook', 'PolyLrSchedulerHook', 'StepLrSchedulerHook', 'OptimizerHook', 'get_priority', 'IterTimerHook',
+    'ApexOptimizerHook'
 ]
