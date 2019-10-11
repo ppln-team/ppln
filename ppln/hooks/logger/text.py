@@ -1,8 +1,6 @@
 import datetime
 from collections import OrderedDict
 
-import torch
-
 from ...utils.misc import master_only
 from .. import Hook
 
