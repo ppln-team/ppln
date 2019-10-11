@@ -5,7 +5,6 @@ import torch
 
 from ...utils.misc import master_only
 from .. import Hook
-from .utils import get_max_memory
 
 
 class TextLoggerHook(Hook):
@@ -55,8 +54,6 @@ class TextLoggerHook(Hook):
             log_dict['time'] = runner.log_buffer.output['time']
             log_dict['data_time'] = runner.log_buffer.output['data_time']
             # statistic memory
-            if torch.cuda.is_available():
-                log_dict['memory'] = get_max_memory(runner)
         for name, val in runner.log_buffer.output.items():
             if name in ['time', 'data_time']:
                 continue

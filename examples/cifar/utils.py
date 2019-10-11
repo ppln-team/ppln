@@ -13,7 +13,7 @@ from ppln.hooks import ApexOptimizerHook
 from ppln.utils.misc import get_dist_info
 
 
-def accuracy(output, target, topk=(1, )):
+def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
     with torch.no_grad():
         maxk = max(topk)
@@ -76,15 +76,14 @@ def build_default_model(model, sync_bn):
     return model
 
 
-def build_apex(
-    model, optimizer, optimizer_config, sync_bn, opt_level, keep_batchnorm_fp32, loss_scale, delay_allreduce
-):
+def build_apex(model, optimizer, optimizer_config, sync_bn, **kwargs):
     from apex import amp
     from apex.parallel import DistributedDataParallel as ApexDDP
     from apex.parallel import convert_syncbn_model
 
+    delay_allreduce = kwargs.pop('delay_allreduce')
     model, optimizer = amp.initialize(
-        model, optimizer, opt_level=opt_level, keep_batchnorm_fp32=keep_batchnorm_fp32, loss_scale=loss_scale
+        model, optimizer, **kwargs
     )
     if sync_bn:
         model = convert_syncbn_model(model)

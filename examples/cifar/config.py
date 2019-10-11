@@ -23,7 +23,7 @@ data = dict(
 )
 
 # apex settings
-apex = False
+apex = dict(opt_level='O2', keep_batchnorm_fp32=True, loss_scale=512.0, delay_allreduce=True)
 
 # optimizer and learning rate
 optimizer = dict(type='torch.optim.Adam', lr=3e-3)

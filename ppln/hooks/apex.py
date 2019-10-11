@@ -1,6 +1,14 @@
-from apex import amp
+import warnings
 
 from ppln.hooks.optimizer import OptimizerHook
+
+try:
+    from apex import amp
+except ImportError as e:
+    warnings.warn(
+        f"Error \"{e}\" during importing apex library. To use mixed precison"
+        ' you should install it from https://github.com/NVIDIA/apex'
+    )
 
 
 class ApexOptimizerHook(OptimizerHook):
