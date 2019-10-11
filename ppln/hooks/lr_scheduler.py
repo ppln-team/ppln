@@ -5,8 +5,8 @@ from torch.optim.lr_scheduler import ReduceLROnPlateau
 from .hook import Hook
 
 
-class LrSchedulerHook(Hook):
-    def __init__(self, by_epoch=True, warmup=None, warmup_iters=0, warmup_ratio=0.1, **kwargs):
+class WarmupLrScheduler:
+    def __init__(self, warmup=None, warmup_iters=0, warmup_ratio=0.1):
         # validate the "warmup" argument
         if warmup is not None:
             if warmup not in ['constant', 'linear', 'exp']:
@@ -20,35 +20,40 @@ class LrSchedulerHook(Hook):
             assert 0 < warmup_ratio <= 1.0, \
                 '"warmup_ratio" must be in range (0,1]'
 
-        self.by_epoch = by_epoch
         self.warmup = warmup
         self.warmup_iters = warmup_iters
         self.warmup_ratio = warmup_ratio
 
+    def get_warmup_lr(self, cur_iters, regular_lr):
+        if self.warmup == 'constant':
+            warmup_lr = [_lr * self.warmup_ratio for _lr in regular_lr]
+        elif self.warmup == 'linear':
+            k = (1 - cur_iters / self.warmup_iters) * (1 - self.warmup_ratio)
+            warmup_lr = [_lr * (1 - k) for _lr in regular_lr]
+        else:
+            k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
+            warmup_lr = [_lr * k for _lr in regular_lr]
+        return warmup_lr
+
+
+def _set_lr(runner, lr_groups):
+    for param_group, lr in zip(runner.optimizer.param_groups, lr_groups):
+        param_group['lr'] = lr
+
+
+class LrSchedulerHook(Hook, WarmupLrScheduler):
+    def __init__(self, by_epoch=True, warmup=None, warmup_iters=0, warmup_ratio=0.1, **kwargs):
+        super().__init__(warmup=warmup, warmup_iters=warmup_iters, warmup_ratio=warmup_ratio)
+        self.by_epoch = by_epoch
+
         self.base_lr = []  # initial lr for all param groups
         self.regular_lr = []  # expected lr if no warming up is performed
-
-    @staticmethod
-    def _set_lr(runner, lr_groups):
-        for param_group, lr in zip(runner.optimizer.param_groups, lr_groups):
-            param_group['lr'] = lr
 
     def get_lr(self, runner, base_lr):
         raise NotImplementedError
 
     def get_regular_lr(self, runner):
         return [self.get_lr(runner, _base_lr) for _base_lr in self.base_lr]
-
-    def get_warmup_lr(self, cur_iters):
-        if self.warmup == 'constant':
-            warmup_lr = [_lr * self.warmup_ratio for _lr in self.regular_lr]
-        elif self.warmup == 'linear':
-            k = (1 - cur_iters / self.warmup_iters) * (1 - self.warmup_ratio)
-            warmup_lr = [_lr * (1 - k) for _lr in self.regular_lr]
-        else:
-            k = self.warmup_ratio**(1 - cur_iters / self.warmup_iters)
-            warmup_lr = [_lr * k for _lr in self.regular_lr]
-        return warmup_lr
 
     def before_run(self, runner):
         # NOTE: when resuming from a checkpoint, if 'initial_lr' is not saved,
@@ -61,35 +66,49 @@ class LrSchedulerHook(Hook):
         if not self.by_epoch:
             return
         self.regular_lr = self.get_regular_lr(runner)
-        self._set_lr(runner, self.regular_lr)
+        _set_lr(runner, self.regular_lr)
 
     def before_train_iter(self, runner):
         cur_iter = runner.iter
         if not self.by_epoch:
             self.regular_lr = self.get_regular_lr(runner)
             if self.warmup is None or cur_iter >= self.warmup_iters:
-                self._set_lr(runner, self.regular_lr)
+                _set_lr(runner, self.regular_lr)
             else:
-                warmup_lr = self.get_warmup_lr(cur_iter)
-                self._set_lr(runner, warmup_lr)
+                warmup_lr = self.get_warmup_lr(cur_iter, self.regular_lr)
+                _set_lr(runner, warmup_lr)
         elif self.by_epoch:
             if self.warmup is None or cur_iter > self.warmup_iters:
                 return
             elif cur_iter == self.warmup_iters:
-                self._set_lr(runner, self.regular_lr)
+                _set_lr(runner, self.regular_lr)
             else:
-                warmup_lr = self.get_warmup_lr(cur_iter)
-                self._set_lr(runner, warmup_lr)
+                warmup_lr = self.get_warmup_lr(cur_iter, self.regular_lr)
+                _set_lr(runner, warmup_lr)
 
 
-class ReduceLROnPlateauHook(Hook):
-    def __init__(self, metric_name, **kwargs):
+class ReduceLROnPlateauHook(Hook, WarmupLrScheduler):
+    def __init__(self, metric_name, warmup=None, warmup_iters=0, warmup_ratio=0.1, **kwargs):
+        super().__init__(warmup=warmup, warmup_iters=warmup_iters, warmup_ratio=warmup_ratio)
         self.metric_name = metric_name
         self.kwargs = kwargs
         self.scheduler = None
+        self.regular_lr = []
 
     def before_run(self, runner):
         self.scheduler = ReduceLROnPlateau(optimizer=runner.optimizer, **self.kwargs)
+        self.regular_lr = [group['lr'] for group in runner.optimizer.param_groups]
+
+    def before_train_iter(self, runner):
+        cur_iter = runner.iter
+
+        if self.warmup is None or cur_iter > self.warmup_iters:
+            return
+        elif cur_iter == self.warmup_iters:
+            _set_lr(runner, self.regular_lr)
+        else:
+            warmup_lr = self.get_warmup_lr(cur_iter, self.regular_lr)
+            _set_lr(runner, warmup_lr)
 
     def after_val_epoch(self, runner):
         self.scheduler.step(runner.log_buffer.output[self.metric_name])

@@ -2,7 +2,8 @@ from argparse import ArgumentParser
 
 from torchvision.models import resnet
 
-from cifar.utils import batch_processor, build_apex, build_data, build_default_model
+from cifar.builder import BuildFactory
+from cifar.utils import batch_processor
 from ppln.factory import make_optimizer
 from ppln.hooks import DistSamplerSeedHook
 from ppln.runner import Runner
@@ -21,12 +22,12 @@ def parse_args():
 def main():
     args = parse_args()
     cfg = Config.fromfile(args.config)
-
+    builder = BuildFactory(cfg)
     # init distributed environment if necessary
     init_dist(**cfg.dist_params)
 
     # build datasets and dataloaders
-    train_loader, val_loader = build_data(**cfg.data)
+    train_loader, val_loader = builder.build_data()
 
     # build model
     model = getattr(resnet, cfg.model)(pretrained=True).cuda()
@@ -34,13 +35,11 @@ def main():
 
     # apex
     if cfg.apex:
-        model, optimizer, optimizer_hook = build_apex(
-            model=model, optimizer=optimizer, optimizer_config=cfg.optimizer_config, sync_bn=cfg.sync_bn, **cfg.apex
-        )
+        model, optimizer, optimizer_hook = builder.build_apex(model=model, optimizer=optimizer)
     else:
         optimizer = cfg.optimizer
         optimizer_hook = cfg.optimizer_config
-        model = build_default_model(model, sync_bn=cfg.sync_bn)
+        model = builder.build_default_model(model)
 
     # build runner and register hooks
     runner = Runner(model, optimizer, batch_processor, cfg.work_dir)
