@@ -27,10 +27,6 @@ def multi_gpu_test(model, data_loader, batch_processor, **kwargs):
         if rank == 0:
             for _ in range(num_samples * world_size):
                 bar.update()
-
-    # collect results from all ranks
-    results = collect_results(results, len(dataset))
-
     return results
 
 
