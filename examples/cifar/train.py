@@ -14,7 +14,6 @@ from ppln.utils.misc import init_dist
 def parse_args():
     parser = ArgumentParser(description='Train CIFAR-10 classification')
     parser.add_argument('config', help='train config file path')
-    parser.add_argument('--launcher', choices=['none', 'pytorch'], default='none', help='job launcher')
     parser.add_argument('--local_rank', type=int, default=0)
     return parser.parse_args()
 

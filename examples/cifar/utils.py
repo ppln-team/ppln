@@ -21,10 +21,17 @@ def accuracy(output, target, topk=(1, )):
         return res
 
 
-def batch_processor(model, data, mode):
-    img, label = data
-    label = label.cuda(non_blocking=True)
-    pred = model(img.cuda(non_blocking=True))
+def make_test_output(pred, data):
+    return dict(
+        values=torch.argmax(pred, dim=1).cpu().numpy(),
+        num_samples=data['image'].size(0),
+        index=data['index'].numpy(),
+        gt_label=data['target'].numpy()
+    )
+
+
+def make_train_output(pred, data):
+    label = data['target'].cuda(non_blocking=True)
     loss = F.cross_entropy(pred, label)
     acc_top1, acc_top5 = accuracy(pred, label, topk=(1, 5))
 
@@ -32,5 +39,12 @@ def batch_processor(model, data, mode):
     values['loss'] = loss.item()
     values['acc_top1'] = acc_top1.item()
     values['acc_top5'] = acc_top5.item()
-    outputs = dict(loss=loss, values=values, num_samples=img.size(0))
-    return outputs
+    return dict(loss=loss, values=values, num_samples=data['image'].size(0))
+
+
+def batch_processor(model, data, mode):
+    pred = model(data['image'].cuda(non_blocking=True))
+    if mode == 'test':
+        return make_test_output(pred, data)
+    else:
+        return make_train_output(pred, data)
