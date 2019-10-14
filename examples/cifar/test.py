@@ -9,7 +9,7 @@ from ppln.fileio import io
 from ppln.inference import collect_results, multi_gpu_test
 from ppln.utils.checkpoint import load_checkpoint
 from ppln.utils.config import Config
-from ppln.utils.misc import init_dist, object_from_dict
+from ppln.utils.misc import init_dist
 
 
 def parse_args():
