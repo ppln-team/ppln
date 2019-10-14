@@ -40,8 +40,8 @@ class MultiLabelDataset(Dataset):
                 targets = torch.tensor([float(cls in targets) for cls in range(self.num_classes)])
             result['targets'] = targets
         if self.transform is not None:
-            sample = self.transform(**sample)
-        return sample
+            result = self.transform(**result)
+        return result
 
 
 class ClassFolderDataset(DatasetFolder):
