@@ -1,4 +1,3 @@
-import torch
 from torchvision import datasets
 
 
@@ -16,8 +15,6 @@ class CustomCIFAR10(datasets.CIFAR10):
         sample = {'image': img, 'index': index, 'target': target}
         if self.transform is not None:
             sample = self.transform(**sample)
-
-        sample['image'] = torch.from_numpy(sample['image'].transpose(2, 0, 1))
 
         if self.target_transform is not None:
             sample['target'] = self.target_transform(sample['target'])

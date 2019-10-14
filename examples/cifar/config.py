@@ -7,7 +7,7 @@ pre_transforms = [
     dict(type='LongestMaxSize', max_size=64),
     dict(type='PadIfNeeded', min_height=64, min_width=64),
 ]
-post_transforms = [dict(type='Normalize')]
+post_transforms = [dict(type='Normalize'), dict(type='ToTensor')]
 augmentations = [
     dict(type='HorizontalFlip'),
     dict(type='ShiftScaleRotate', shift_limit=0.11, scale_limit=0.13, rotate_limit=7)
