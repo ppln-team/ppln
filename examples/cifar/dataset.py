@@ -13,12 +13,13 @@ class CustomCIFAR10(datasets.CIFAR10):
         """
         img, target = self.data[index], self.targets[index]
 
+        sample = {'image': img, 'index': index, 'target': target}
         if self.transform is not None:
-            img = self.transform(image=img)['image']
+            sample = self.transform(**sample)
 
-        img = torch.from_numpy(img.transpose(2, 0, 1))
+        sample['image'] = torch.from_numpy(sample['image'].transpose(2, 0, 1))
 
         if self.target_transform is not None:
-            target = self.target_transform(target)
+            sample['target'] = self.target_transform(sample['target'])
 
-        return img, target
+        return sample
