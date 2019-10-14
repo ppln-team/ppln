@@ -1,4 +1,5 @@
 import albumentations as A
+from albumentations import pytorch
 
 from ppln.utils.misc import object_from_dict
 
@@ -14,7 +15,10 @@ def build_albumentations(transforms):
     def build(config):
         if 'transforms' in config:
             config['transforms'] = [build(transform) for transform in config['transforms']]
-        return object_from_dict(config, A)
+        try:
+            return object_from_dict(config, A)
+        except AttributeError:
+            return object_from_dict(config, pytorch)
 
     return build({
         'type': 'Compose',
