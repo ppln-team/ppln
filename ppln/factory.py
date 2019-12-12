@@ -17,8 +17,6 @@ except ImportError as e:
     )
 
 
-
-
 def make_model(cfg) -> torch.nn.Module:
     model = object_from_dict(cfg)
     return model.cuda()
