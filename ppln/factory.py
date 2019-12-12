@@ -1,12 +1,22 @@
 import logging
 import os.path as osp
+import warnings
 
 import torch
-from apex import amp
-from apex.parallel import DistributedDataParallel as ApexDDP
 from torch.nn.parallel import DistributedDataParallel
 
 from .utils.misc import get_dist_info, get_timestamp, object_from_dict
+
+try:
+    from apex import amp
+    from apex.parallel import DistributedDataParallel as ApexDDP
+except ImportError as e:
+    warnings.warn(
+        f"Error \"{e}\" during importing apex library. To use mixed precison"
+        ' you should install it from https://github.com/NVIDIA/apex'
+    )
+
+
 
 
 def make_model(cfg) -> torch.nn.Module:
