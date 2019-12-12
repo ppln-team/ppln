@@ -3,7 +3,6 @@ import argparse
 import torch
 
 from cifar.experiment import CIFARBatchProcessor, CIFARExperiment
-from ppln.factory import make_apex
 from ppln.fileio import io
 from ppln.inference import collect_results, multi_gpu_test
 from ppln.utils.checkpoint import load_checkpoint
