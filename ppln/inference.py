@@ -18,9 +18,9 @@ def multi_gpu_test(model, data_loader, batch_processor, **kwargs):
     rank, world_size = get_dist_info()
     if rank == 0:
         bar = ProgressBar(len(dataset))
-    for i, data in enumerate(data_loader):
+    for i, batch in enumerate(data_loader):
         with torch.no_grad():
-            result = batch_processor(model, data, mode='test', **kwargs)
+            result = batch_processor.test_step(model, batch, **kwargs)
             num_samples = result.pop('num_samples')
         results.append(result)
 

@@ -2,25 +2,29 @@ import os
 
 import torch
 
-from . import hooks
+from . import hooks as _hooks
 from .factory import make_logger, make_model, make_optimizer
-from .hooks import CheckpointHook, Hook, IterTimerHook, LogBufferHook, OptimizerHook, get_priority, lr_scheduler
+from .hooks import Hook, IterTimerHook, LogBufferHook
 from .utils.checkpoint import load_checkpoint
 from .utils.log_buffer import LogBuffer
 from .utils.misc import object_from_dict
 
 
 class Runner:
-    def __init__(self, model, optimizer, batch_processor, work_dir, logger=None):
+    def __init__(self, model, optimizer, batch_processor, hooks, work_dir, logger=None):
         self.work_dir = self.init_work_dir(work_dir)
         self.logger = self.init_logger(logger)
         self.model = self.init_model(model)
         self.optimizer = self.init_optimizer(optimizer)
+        self.hooks = []
 
         self.batch_processor = batch_processor
         self.log_buffer = LogBuffer()
+        self.register_hooks(hooks)
 
-        self.hooks = []
+        self.outputs = None
+        self.mode = None
+        self.data_loader = None
         self.epoch = 0
         self.iter = 0
         self.inner_iter = 0
@@ -68,8 +72,13 @@ class Runner:
         for hook in self.hooks:
             getattr(hook, action)(self)
 
-    def run(self, data_loaders, max_epochs, **kwargs):
+    def run(self, data_loaders, max_epochs, resume_from=None, load_from=None, **kwargs):
         """Start running"""
+        if resume_from is not None:
+            self.resume(resume_from)
+        elif load_from is not None:
+            self.load(load_from)
+
         self.max_epochs = max_epochs
 
         self.call_hook('before_run')
@@ -92,7 +101,7 @@ class Runner:
     def run_batch(self, batch, **kwargs):
         self.call_hook(f'before_{self.mode}_iter')
         with torch.set_grad_enabled(self.train_mode):
-            self.outputs = self.batch_processor(self.model, batch, mode=self.mode, **kwargs)
+            self.outputs = getattr(self.batch_processor, f'{self.mode}_step')(self.model, batch, **kwargs)
             self.log_buffer.update(self.outputs['values'], self.outputs['num_samples'])
         self.call_hook(f'after_{self.mode}_iter')
 
@@ -116,41 +125,26 @@ class Runner:
     def load(self, filename, map_location='cpu', strict=False):
         return load_checkpoint(self.model, filename, map_location, strict)
 
-    def register_hook(self, hook, priority='NORMAL'):
+    def register_hook(self, hook):
         """Register a hook into the hook list.
         Args:
             hook (:obj:`Hook`): The hook to be registered.
-            priority (int or str or :obj:`Priority`): Hook priority.
-                Lower value means higher priority.
         """
-        assert isinstance(hook, Hook)
-        if hasattr(hook, 'priority'):
-            raise ValueError('"priority" is a reserved attribute for hooks')
-        priority = get_priority(priority)
-        hook.priority = priority
+        if isinstance(hook, dict):
+            hook = object_from_dict(hook, _hooks)
+
         # insert the hook to a sorted list
         inserted = False
         for i in range(len(self.hooks) - 1, -1, -1):
-            if priority >= self.hooks[i].priority:
+            if hook.priority >= self.hooks[i].priority:
                 self.hooks.insert(i + 1, hook)
                 inserted = True
                 break
         if not inserted:
             self.hooks.insert(0, hook)
 
-    def register_hooks(self, lr_config, optimizer_config=None, checkpoint_config=None, log_config=None):
-        """Register default hooks for training."""
-        if optimizer_config is None:
-            optimizer_config = {}
-        if checkpoint_config is None:
-            checkpoint_config = {}
-        self.register_hook(object_from_dict(lr_config, lr_scheduler))
-        self.register_hook(
-            optimizer_config if isinstance(optimizer_config, Hook) else OptimizerHook(**optimizer_config)
-        )
+    def register_hooks(self, hooks):
+        for hook in hooks:
+            self.register_hook(hook if isinstance(hook, Hook) else object_from_dict(hook, _hooks))
         self.register_hook(IterTimerHook())
-        self.register_hook(LogBufferHook(), priority='LOW')
-        for hook_params in log_config['hooks']:
-            logger_hook = object_from_dict(hook_params, hooks)
-            self.register_hook(logger_hook, priority='VERY_LOW')
-        self.register_hook(CheckpointHook(**checkpoint_config), priority='LOWEST')
+        self.register_hook(LogBufferHook())

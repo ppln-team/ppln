@@ -3,6 +3,7 @@ from collections import OrderedDict
 
 from ...utils.misc import master_only
 from .. import Hook
+from ..priority import get_priority
 
 
 class TextLoggerHook(Hook):
@@ -10,6 +11,10 @@ class TextLoggerHook(Hook):
         self.time_sec_tot = 0
         self.start_iter = None
         self.json_log_path = None
+
+    @property
+    def priority(self):
+        return get_priority('VERY_LOW')
 
     def before_run(self, runner):
         self.start_iter = runner.iter

@@ -1,6 +1,5 @@
 # model settings
-model = 'resnet18'
-sync_bn = True
+model = dict(type='torchvision.models.resnet18', pretrained=True)
 
 # transform settings
 pre_transforms = [
@@ -12,38 +11,48 @@ augmentations = [
     dict(type='HorizontalFlip'),
     dict(type='ShiftScaleRotate', shift_limit=0.11, scale_limit=0.13, rotate_limit=7)
 ]
-transforms = dict(train=pre_transforms + augmentations + post_transforms, val=pre_transforms + post_transforms)
+transforms = dict(
+    train=pre_transforms + augmentations + post_transforms,
+    val=pre_transforms + post_transforms,
+    test=pre_transforms + post_transforms
+)
 
 # dataset settings
 data = dict(
     data_root='/data/cifar10',
-    images_per_gpu=64,  # images per gpu
-    workers_per_gpu=4  # data workers per gpu
+    images_per_gpu=128,  # images per gpu
+    workers_per_gpu=4,  # data workers per gpu
+    pin_memory=False
 )
 
-# apex settings
-apex = dict(opt_level='O2', keep_batchnorm_fp32=True, loss_scale=512.0, delay_allreduce=True)
+# ddp settings
+apex = dict(opt_level='O1', loss_scale=512.0)
+ddp = None
+dist_params = dict(backend='nccl')
 
 # optimizer and learning rate
 optimizer = dict(type='torch.optim.Adam', lr=3e-4)
-optimizer_config = dict(grad_clip=None)
-lr_config = dict(
-    type='ReduceLROnPlateauHook',
-    warmup='linear',
-    warmup_iters=1000,
-    warmup_ratio=0.33,
-    metric_name='loss',
-    mode='max',
-    patience=0
-)
 
 # runtime settings
 work_dir = '/data/demo'
-dist_params = dict(backend='nccl')
-checkpoint_config = dict(num_checkpoints=5, metric_name='acc_top5', mode='max')  # save checkpoint at every epoch
 total_epochs = 20
 resume_from = None
 load_from = None
 
-# logging settings
-log_config = dict(hooks=[dict(type='ProgressBarLoggerHook', bar_width=40), dict(type='TextLoggerHook')])
+# hook settings
+hooks = [
+    dict(type='ProgressBarLoggerHook', bar_width=10),
+    dict(type='TextLoggerHook'),
+    dict(type='CheckpointHook', num_checkpoints=5, metric_name='acc_top5', mode='max'),
+    dict(
+        type='ReduceLROnPlateauHook',
+        warmup='linear',
+        warmup_iters=1000,
+        warmup_ratio=0.33,
+        metric_name='loss',
+        mode='max',
+        patience=0
+    ),
+    dict(type='ApexOptimizerHook', grad_clip=None),
+    dict(type='DistSamplerSeedHook')
+]

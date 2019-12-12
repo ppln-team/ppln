@@ -6,9 +6,14 @@ import torch.distributed as dist
 from ..fileio import io
 from ..utils.misc import get_dist_info
 from .hook import Hook
+from .priority import get_priority
 
 
 class LogBufferHook(Hook):
+    @property
+    def priority(self):
+        return get_priority('LOW')
+
     @staticmethod
     def sync(runner):
         rank, world_size = get_dist_info()
