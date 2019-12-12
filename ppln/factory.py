@@ -1,14 +1,38 @@
 import logging
 import os.path as osp
+import warnings
 
 import torch
+from torch.nn.parallel import DistributedDataParallel
 
 from .utils.misc import get_dist_info, get_timestamp, object_from_dict
 
+try:
+    from apex import amp
+    from apex.parallel import DistributedDataParallel as ApexDDP
+except ImportError as e:
+    warnings.warn(
+        f"Error \"{e}\" during importing apex library. To use mixed precison"
+        ' you should install it from https://github.com/NVIDIA/apex'
+    )
 
-def make_model(config) -> torch.nn.Module:
-    model = object_from_dict(config)
+
+def make_model(cfg) -> torch.nn.Module:
+    model = object_from_dict(cfg)
     return model.cuda()
+
+
+def make_ddp(model) -> torch.nn.Module:
+    return DistributedDataParallel(model, device_ids=[torch.cuda.current_device()])
+
+
+def make_apex(cfg, model, optimizer=None):
+    if optimizer is None:
+        model = amp.initialize(model, **cfg)
+        return ApexDDP(model, delay_allreduce=True)
+    else:
+        model, optimizer = amp.initialize(model, optimizer, **cfg)
+        return ApexDDP(model, delay_allreduce=True), optimizer
 
 
 def make_optimizer(model: torch.nn.Module, config: dict) -> torch.optim.Optimizer:

@@ -1,4 +1,11 @@
+from .priority import get_priority
+
+
 class Hook(object):
+    @property
+    def priority(self):
+        return get_priority('NORMAL')
+
     def before_run(self, runner):
         pass
 

@@ -5,6 +5,7 @@ from colorama import Fore, Style
 from ...utils.misc import master_only
 from ...utils.progress_bar import ProgressBar
 from ..hook import Hook
+from ..priority import get_priority
 
 
 class ProgressBarLoggerHook(Hook):
@@ -12,6 +13,10 @@ class ProgressBarLoggerHook(Hook):
         super(ProgressBarLoggerHook, self).__init__()
         self.bar_width = bar_width
         self.bar = None
+
+    @property
+    def priority(self):
+        return get_priority('VERY_LOW')
 
     def before_epoch(self, runner):
         self.bar = ProgressBar(task_num=len(runner.data_loader), bar_width=self.bar_width)

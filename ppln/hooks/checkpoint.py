@@ -7,6 +7,7 @@ import numpy as np
 from ..utils.checkpoint import save_checkpoint
 from ..utils.misc import master_only
 from .hook import Hook
+from .priority import get_priority
 
 
 class CheckpointHook(Hook):
@@ -18,6 +19,10 @@ class CheckpointHook(Hook):
         self._checkpoints = PriorityQueue(num_checkpoints)
         self._metric_name = metric_name
         self._best_metric = -np.infty
+
+    @property
+    def priority(self):
+        return get_priority('LOWEST')
 
     def before_run(self, runner):
         if not self.out_dir:

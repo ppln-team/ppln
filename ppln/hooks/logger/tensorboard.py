@@ -2,12 +2,17 @@ import os.path as osp
 
 from ...utils.misc import master_only
 from .. import Hook
+from ..priority import get_priority
 
 
 class TensorboardLoggerHook(Hook):
     def __init__(self, log_dir=None, reset_flag=True):
         super(TensorboardLoggerHook, self).__init__(reset_flag)
         self.log_dir = log_dir
+
+    @property
+    def priority(self):
+        return get_priority('VERY_LOW')
 
     @master_only
     def before_run(self, runner):

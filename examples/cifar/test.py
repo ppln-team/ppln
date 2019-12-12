@@ -1,10 +1,8 @@
 import argparse
 
 import torch
-from torchvision.models import resnet
 
-from cifar.builder import BuildFactory
-from cifar.utils import batch_processor
+from cifar.experiment import CIFARBatchProcessor, CIFARExperiment
 from ppln.fileio import io
 from ppln.inference import collect_results, multi_gpu_test
 from ppln.utils.checkpoint import load_checkpoint
@@ -28,19 +26,18 @@ def main():
 
     if cfg.get('cudnn_benchmark', False):
         torch.backends.cudnn.benchmark = True
-    cfg.sync_bn = False
-
     init_dist(**cfg.dist_params)
 
-    # build data
-    builder = BuildFactory(cfg)
-    dataset = builder.build_dataset('val')
-    data_loader = builder.build_dataloader(dataset)
+    experiment = CIFARExperiment(cfg)
+
+    # build data loader
+    data_loader = experiment.dataloader('val')
 
     # build model
-    model = getattr(resnet, cfg.model)(pretrained=True).cuda()
-    model = builder.build_default_model(model)
+    model = experiment.model
     load_checkpoint(model, args.checkpoint, map_location='cpu')
+
+    batch_processor = CIFARBatchProcessor()
 
     outputs = multi_gpu_test(model, data_loader, batch_processor)
     outputs = collect_results(outputs, len(data_loader.dataset))

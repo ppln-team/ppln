@@ -6,7 +6,7 @@ from .log_buffer import LogBufferHook
 from .logger import ProgressBarLoggerHook, TensorboardLoggerHook, TextLoggerHook
 from .lr_scheduler import (
     CosineLrSchedulerHook, ExpLrSchedulerHook, FixedLrSchedulerHook, InvLrSchedulerHook, LrSchedulerHook,
-    PolyLrSchedulerHook, StepLrSchedulerHook
+    PolyLrSchedulerHook, ReduceLROnPlateauHook, StepLrSchedulerHook
 )
 from .optimizer import OptimizerHook
 from .priority import get_priority
@@ -16,5 +16,5 @@ __all__ = [
     'CheckpointHook', 'DistSamplerSeedHook', 'Hook', 'LogBufferHook', 'ProgressBarLoggerHook', 'TensorboardLoggerHook',
     'TextLoggerHook', 'CosineLrSchedulerHook', 'ExpLrSchedulerHook', 'FixedLrSchedulerHook', 'InvLrSchedulerHook',
     'LrSchedulerHook', 'PolyLrSchedulerHook', 'StepLrSchedulerHook', 'OptimizerHook', 'get_priority', 'IterTimerHook',
-    'ApexOptimizerHook'
+    'ApexOptimizerHook', 'ReduceLROnPlateauHook'
 ]
