@@ -2,7 +2,7 @@ from math import cos, pi
 
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from .hook import Hook
+from .base import BaseHook
 
 
 class WarmupLrScheduler:
@@ -41,7 +41,7 @@ def _set_lr(runner, lr_groups):
         param_group['lr'] = lr
 
 
-class LrSchedulerHook(Hook, WarmupLrScheduler):
+class LrSchedulerHook(BaseHook, WarmupLrScheduler):
     def __init__(self, by_epoch=True, warmup=None, warmup_iters=0, warmup_ratio=0.1, **kwargs):
         super().__init__(warmup=warmup, warmup_iters=warmup_iters, warmup_ratio=warmup_ratio)
         self.by_epoch = by_epoch
@@ -87,7 +87,7 @@ class LrSchedulerHook(Hook, WarmupLrScheduler):
                 _set_lr(runner, warmup_lr)
 
 
-class ReduceLROnPlateauHook(Hook, WarmupLrScheduler):
+class ReduceLROnPlateauHook(BaseHook, WarmupLrScheduler):
     def __init__(self, metric_name, warmup=None, warmup_iters=0, warmup_ratio=0.1, **kwargs):
         super().__init__(warmup=warmup, warmup_iters=warmup_iters, warmup_ratio=warmup_ratio)
         self.metric_name = metric_name

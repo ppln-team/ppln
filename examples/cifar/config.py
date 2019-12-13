@@ -26,8 +26,6 @@ data = dict(
 )
 
 # ddp settings
-apex = dict(opt_level='O1', loss_scale=512.0)
-ddp = None
 dist_params = dict(backend='nccl')
 
 # optimizer and learning rate
@@ -53,6 +51,7 @@ hooks = [
         mode='max',
         patience=0
     ),
-    dict(type='ApexOptimizerHook', grad_clip=None),
-    dict(type='DistSamplerSeedHook')
+    dict(type='ApexInitializeHook', opt_level='O1', loss_scale=512.0),
+    dict(type='ApexDDPHook', delay_allreduce=True),
+    dict(type='ApexOptimizerHook', grad_clip=None)
 ]

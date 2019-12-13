@@ -24,8 +24,8 @@ def main():
         model=experiment.model,
         optimizer=experiment.optimizer,
         batch_processor=CIFARBatchProcessor(),
-        hooks=experiment.cfg.hooks,
-        work_dir=experiment.cfg.work_dir
+        hooks=experiment.hooks,
+        work_dir=experiment.work_dir
     )
 
     runner.run(

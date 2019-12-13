@@ -4,7 +4,7 @@ from albumentations import pytorch
 from ppln.utils.misc import object_from_dict
 
 
-def build_albumentations(transforms):
+def make_albumentations(transforms):
     """
     Build transformation from albumentations library.
     Please, visit `https://albumentations.readthedocs.io` to get more information.

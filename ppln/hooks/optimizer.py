@@ -1,9 +1,9 @@
 from torch.nn.utils import clip_grad
 
-from .hook import Hook
+from .base import BaseHook
 
 
-class OptimizerHook(Hook):
+class OptimizerHook(BaseHook):
     def __init__(self, grad_clip=None):
         self.grad_clip = grad_clip
 
