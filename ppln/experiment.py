@@ -1,21 +1,28 @@
+import torch.distributed as dist
 from torch.utils.data import DataLoader
 
-from ppln.data.transforms import build_albumentations
-from ppln.factory import make_apex, make_ddp, make_model, make_optimizer
+from .data.transforms import make_albumentations
+from .factory import make_model, make_optimizer
+from .hooks import DistSamplerSeedHook, IterTimerHook, LogBufferHook
 
 
 class BaseExperiment:
     def __init__(self, cfg):
         self.cfg = cfg
-        self.model = make_model(self.cfg.model)
-        self.optimizer = make_optimizer(self.model, self.cfg.optimizer)
-        if self.cfg.apex is not None:
-            self.model, self.optimizer = make_apex(self.cfg.apex, self.model, self.optimizer)
-        elif self.cfg.ddp is not None:
-            self.model = make_ddp(self.model)
+        self._model = None
+
+    @property
+    def optimizer(self):
+        return make_optimizer(self.model, self.cfg.optimizer)
+
+    @property
+    def model(self):
+        if self._model is None:
+            self._model = make_model(self.cfg.model)
+        return self._model
 
     def transform(self, mode):
-        return build_albumentations(self.cfg.transforms[mode])
+        return make_albumentations(self.cfg.transforms[mode])
 
     def dataset(self, mode):
         raise NotImplementedError
@@ -33,3 +40,14 @@ class BaseExperiment:
             num_workers=self.cfg.data.workers_per_gpu,
             pin_memory=self.cfg.data.pin_memory,
         )
+
+    @property
+    def hooks(self):
+        hooks = self.cfg['hooks']
+        if dist.is_initialized():
+            hooks.append(DistSamplerSeedHook())
+        return self.cfg['hooks'] + [IterTimerHook(), LogBufferHook()]
+
+    @property
+    def work_dir(self):
+        return self.cfg.work_dir

@@ -1,6 +1,9 @@
 import warnings
 
-from ppln.hooks.optimizer import OptimizerHook
+from ..factory import make_apex
+from .base import BaseClosureHook, BaseHook
+from .optimizer import OptimizerHook
+from .priority import Priority
 
 try:
     from apex import amp
@@ -21,3 +24,15 @@ class ApexOptimizerHook(OptimizerHook):
         if self.grad_clip is not None:
             self.clip_grads(amp.master_params(runner.optimizer))
         runner.optimizer.step()
+
+
+class ApexInitializeHook(BaseClosureHook, BaseHook):
+    def __init__(self, **kwargs):
+        super().__init__(make_apex, **kwargs)
+
+    @property
+    def priority(self):
+        return Priority.HIGHEST
+
+    def before_run(self, runner):
+        runner.model, runner.optimizer = self.func(runner.model, runner.optimizer)

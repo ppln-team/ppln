@@ -1,7 +1,7 @@
-from .apex import ApexOptimizerHook
+from .apex import ApexInitializeHook, ApexOptimizerHook
+from .base import BaseClosureHook, BaseHook
 from .checkpoint import CheckpointHook
-from .dist import DistSamplerSeedHook
-from .hook import Hook
+from .dist import ApexDDPHook, BaseDDPHook, DistSamplerSeedHook, PytorchDDPHook
 from .log_buffer import LogBufferHook
 from .logger import ProgressBarLoggerHook, TensorboardLoggerHook, TextLoggerHook
 from .lr_scheduler import (
@@ -9,12 +9,13 @@ from .lr_scheduler import (
     PolyLrSchedulerHook, ReduceLROnPlateauHook, StepLrSchedulerHook
 )
 from .optimizer import OptimizerHook
-from .priority import get_priority
+from .priority import Priority
 from .timer import IterTimerHook
 
 __all__ = [
-    'CheckpointHook', 'DistSamplerSeedHook', 'Hook', 'LogBufferHook', 'ProgressBarLoggerHook', 'TensorboardLoggerHook',
-    'TextLoggerHook', 'CosineLrSchedulerHook', 'ExpLrSchedulerHook', 'FixedLrSchedulerHook', 'InvLrSchedulerHook',
-    'LrSchedulerHook', 'PolyLrSchedulerHook', 'StepLrSchedulerHook', 'OptimizerHook', 'get_priority', 'IterTimerHook',
-    'ApexOptimizerHook', 'ReduceLROnPlateauHook'
+    'CheckpointHook', 'DistSamplerSeedHook', 'BaseHook', 'LogBufferHook', 'ProgressBarLoggerHook',
+    'TensorboardLoggerHook', 'TextLoggerHook', 'CosineLrSchedulerHook', 'ExpLrSchedulerHook', 'FixedLrSchedulerHook',
+    'InvLrSchedulerHook', 'LrSchedulerHook', 'PolyLrSchedulerHook', 'StepLrSchedulerHook', 'OptimizerHook', 'Priority',
+    'IterTimerHook', 'ApexOptimizerHook', 'ReduceLROnPlateauHook', 'ApexInitializeHook', 'ApexDDPHook',
+    'PytorchDDPHook', 'BaseDDPHook', 'BaseClosureHook'
 ]

@@ -3,7 +3,7 @@ import os.path as osp
 import warnings
 
 import torch
-from torch.nn.parallel import DistributedDataParallel
+from torch.nn.parallel import DistributedDataParallel as PytorchDDP
 
 from .utils.misc import get_dist_info, get_timestamp, object_from_dict
 
@@ -22,17 +22,21 @@ def make_model(cfg) -> torch.nn.Module:
     return model.cuda()
 
 
-def make_ddp(model) -> torch.nn.Module:
-    return DistributedDataParallel(model, device_ids=[torch.cuda.current_device()])
+def make_pytorch_ddp(model, **kwargs) -> torch.nn.Module:
+    return PytorchDDP(model, device_ids=[torch.cuda.current_device()], **kwargs)
 
 
-def make_apex(cfg, model, optimizer=None):
+def make_apex_ddp(model, **kwargs) -> torch.nn.Module:
+    return ApexDDP(model, **kwargs)
+
+
+def make_apex(model, optimizer=None, **kwargs):
     if optimizer is None:
-        model = amp.initialize(model, **cfg)
-        return ApexDDP(model, delay_allreduce=True)
+        model = amp.initialize(model, **kwargs)
+        return model
     else:
-        model, optimizer = amp.initialize(model, optimizer, **cfg)
-        return ApexDDP(model, delay_allreduce=True), optimizer
+        model, optimizer = amp.initialize(model, optimizer, **kwargs)
+        return model, optimizer
 
 
 def make_optimizer(model: torch.nn.Module, config: dict) -> torch.optim.Optimizer:

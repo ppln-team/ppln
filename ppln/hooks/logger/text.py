@@ -2,11 +2,11 @@ import datetime
 from collections import OrderedDict
 
 from ...utils.misc import master_only
-from .. import Hook
-from ..priority import get_priority
+from .. import BaseHook
+from ..priority import Priority
 
 
-class TextLoggerHook(Hook):
+class TextLoggerHook(BaseHook):
     def __init__(self):
         self.time_sec_tot = 0
         self.start_iter = None
@@ -14,7 +14,7 @@ class TextLoggerHook(Hook):
 
     @property
     def priority(self):
-        return get_priority('VERY_LOW')
+        return Priority.VERY_LOW
 
     def before_run(self, runner):
         self.start_iter = runner.iter

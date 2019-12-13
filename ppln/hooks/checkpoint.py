@@ -6,11 +6,11 @@ import numpy as np
 
 from ..utils.checkpoint import save_checkpoint
 from ..utils.misc import master_only
-from .hook import Hook
-from .priority import get_priority
+from .base import BaseHook
+from .priority import Priority
 
 
-class CheckpointHook(Hook):
+class CheckpointHook(BaseHook):
     def __init__(self, metric_name, mode, num_checkpoints=5, save_optimizer=True, out_dir=None, **kwargs):
         self.mode = mode
         self.save_optimizer = save_optimizer
@@ -22,7 +22,7 @@ class CheckpointHook(Hook):
 
     @property
     def priority(self):
-        return get_priority('LOWEST')
+        return Priority.LOWEST
 
     def before_run(self, runner):
         if not self.out_dir:

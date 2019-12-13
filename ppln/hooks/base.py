@@ -1,10 +1,12 @@
-from .priority import get_priority
+from functools import partial
+
+from .priority import Priority
 
 
-class Hook(object):
+class BaseHook(object):
     @property
     def priority(self):
-        return get_priority('NORMAL')
+        return Priority.NORMAL
 
     def before_run(self, runner):
         pass
@@ -48,18 +50,7 @@ class Hook(object):
     def after_val_iter(self, runner):
         self.after_iter(runner)
 
-    @staticmethod
-    def every_n_epochs(runner, n):
-        return (runner.epoch + 1) % n == 0 if n > 0 else False
 
-    @staticmethod
-    def every_n_inner_iters(runner, n):
-        return (runner.inner_iter + 1) % n == 0 if n > 0 else False
-
-    @staticmethod
-    def every_n_iters(runner, n):
-        return (runner.iter + 1) % n == 0 if n > 0 else False
-
-    @staticmethod
-    def end_of_epoch(runner):
-        return runner.inner_iter + 1 == len(runner.data_loader)
+class BaseClosureHook(BaseHook):
+    def __init__(self, func, **kwargs):
+        self.func = partial(func, **kwargs)

@@ -5,14 +5,14 @@ import torch.distributed as dist
 
 from ..fileio import io
 from ..utils.misc import get_dist_info
-from .hook import Hook
-from .priority import get_priority
+from .base import BaseHook
+from .priority import Priority
 
 
-class LogBufferHook(Hook):
+class LogBufferHook(BaseHook):
     @property
     def priority(self):
-        return get_priority('LOW')
+        return Priority.LOW
 
     @staticmethod
     def sync(runner):

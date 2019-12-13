@@ -1,9 +1,9 @@
 import time
 
-from .hook import Hook
+from .base import BaseHook
 
 
-class IterTimerHook(Hook):
+class IterTimerHook(BaseHook):
     def before_epoch(self, runner):
         self.t = time.time()
 

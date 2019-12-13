@@ -4,11 +4,11 @@ from colorama import Fore, Style
 
 from ...utils.misc import master_only
 from ...utils.progress_bar import ProgressBar
-from ..hook import Hook
-from ..priority import get_priority
+from ..base import BaseHook
+from ..priority import Priority
 
 
-class ProgressBarLoggerHook(Hook):
+class ProgressBarLoggerHook(BaseHook):
     def __init__(self, bar_width):
         super(ProgressBarLoggerHook, self).__init__()
         self.bar_width = bar_width
@@ -16,7 +16,7 @@ class ProgressBarLoggerHook(Hook):
 
     @property
     def priority(self):
-        return get_priority('VERY_LOW')
+        return Priority.VERY_LOW
 
     def before_epoch(self, runner):
         self.bar = ProgressBar(task_num=len(runner.data_loader), bar_width=self.bar_width)
@@ -25,10 +25,7 @@ class ProgressBarLoggerHook(Hook):
     def after_epoch(self, runner):
         sys.stdout.write(f'\n')
 
-    def after_train_iter(self, runner):
-        self.log(runner)
-
-    def after_val_iter(self, runner):
+    def after_iter(self, runner):
         self.log(runner)
 
     @master_only
