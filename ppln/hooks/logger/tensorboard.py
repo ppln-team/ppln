@@ -1,14 +1,17 @@
-import os.path as osp
+from torch.utils.tensorboard import SummaryWriter
 
 from ...utils.misc import master_only
 from .. import BaseHook
 from ..priority import Priority
+from ..registry import HOOKS
 
 
+@HOOKS.register_module
 class TensorboardLoggerHook(BaseHook):
-    def __init__(self, log_dir=None, reset_flag=True):
-        super(TensorboardLoggerHook, self).__init__(reset_flag)
+    def __init__(self, log_dir=None):
+        super(TensorboardLoggerHook, self).__init__()
         self.log_dir = log_dir
+        self.writer = None
 
     @property
     def priority(self):
@@ -16,14 +19,7 @@ class TensorboardLoggerHook(BaseHook):
 
     @master_only
     def before_run(self, runner):
-        try:
-            from tensorboardX import SummaryWriter
-        except ImportError:
-            raise ImportError('Please install tensorflow and tensorboardX to use TensorboardLoggerHook.')
-        else:
-            if self.log_dir is None:
-                self.log_dir = osp.join(runner.work_dir, 'tf_logs')
-            self.writer = SummaryWriter(self.log_dir)
+        self.writer = SummaryWriter(self.log_dir)
 
     @master_only
     def log(self, runner):
@@ -40,3 +36,6 @@ class TensorboardLoggerHook(BaseHook):
     @master_only
     def after_run(self, runner):
         self.writer.close()
+
+    def after_epoch(self, runner):
+        self.log(runner)

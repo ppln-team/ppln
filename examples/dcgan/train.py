@@ -1,6 +1,8 @@
 from argparse import ArgumentParser
 
-from cifar.experiment import CIFARBatchProcessor, CIFARExperiment
+from dcgan.batch_processor import GANBatchProcessor
+from dcgan.experiment import GANExperiment
+
 from ppln.runner import Runner
 from ppln.utils.config import Config
 from ppln.utils.misc import init_dist
@@ -18,21 +20,18 @@ def main():
     cfg = Config.fromfile(args.config)
     init_dist(**cfg.dist_params)
 
-    experiment = CIFARExperiment(cfg)
-
+    experiment = GANExperiment(cfg)
+    print(experiment.hooks)
     runner = Runner(
         model=experiment.model,
         optimizers=experiment.optimizers,
-        batch_processor=CIFARBatchProcessor(cfg),
+        batch_processor=GANBatchProcessor(cfg),
         hooks=experiment.hooks,
         work_dir=experiment.work_dir
     )
 
     runner.run(
-        data_loaders={
-            'train': experiment.dataloader('train'),
-            'val': experiment.dataloader('val')
-        },
+        data_loaders={'train': experiment.dataloader('train')},
         max_epochs=cfg.total_epochs,
         resume_from=cfg.resume_from,
         load_from=cfg.load_from

@@ -1,8 +1,10 @@
 from functools import partial
 
 from .priority import Priority
+from .registry import HOOKS
 
 
+@HOOKS.register_module
 class BaseHook(object):
     @property
     def priority(self):
@@ -51,6 +53,7 @@ class BaseHook(object):
         self.after_iter(runner)
 
 
+@HOOKS.register_module
 class BaseClosureHook(BaseHook):
     def __init__(self, func, **kwargs):
         self.func = partial(func, **kwargs)

@@ -10,6 +10,7 @@ from .lr_scheduler import (
 )
 from .optimizer import OptimizerHook
 from .priority import Priority
+from .registry import HOOKS
 from .timer import IterTimerHook
 
 __all__ = [
@@ -17,5 +18,5 @@ __all__ = [
     'TensorboardLoggerHook', 'TextLoggerHook', 'CosineLrSchedulerHook', 'ExpLrSchedulerHook', 'FixedLrSchedulerHook',
     'InvLrSchedulerHook', 'LrSchedulerHook', 'PolyLrSchedulerHook', 'StepLrSchedulerHook', 'OptimizerHook', 'Priority',
     'IterTimerHook', 'ApexOptimizerHook', 'ReduceLROnPlateauHook', 'ApexInitializeHook', 'ApexDDPHook',
-    'PytorchDDPHook', 'BaseDDPHook', 'BaseClosureHook'
+    'PytorchDDPHook', 'BaseDDPHook', 'BaseClosureHook', 'HOOKS'
 ]

@@ -4,6 +4,7 @@ from ..factory import make_apex
 from .base import BaseClosureHook, BaseHook
 from .optimizer import OptimizerHook
 from .priority import Priority
+from .registry import HOOKS
 
 try:
     from apex import amp
@@ -14,18 +15,20 @@ except ImportError as e:
     )
 
 
+@HOOKS.register_module
 class ApexOptimizerHook(OptimizerHook):
     def after_train_iter(self, runner):
-        runner.optimizer.zero_grad()
+        runner.optimizers[self.name].zero_grad()
 
-        with amp.scale_loss(runner.outputs['loss'], runner.optimizer) as scaled_loss:
+        with amp.scale_loss(runner.outputs[f'{self.name}_loss'], runner.optimizers[self.name]) as scaled_loss:
             scaled_loss.backward()
 
         if self.grad_clip is not None:
-            self.clip_grads(amp.master_params(runner.optimizer))
-        runner.optimizer.step()
+            self.clip_grads(amp.master_params(runner.optimizers[self.name]))
+        runner.optimizers[self.name].step()
 
 
+@HOOKS.register_module
 class ApexInitializeHook(BaseClosureHook, BaseHook):
     def __init__(self, **kwargs):
         super().__init__(make_apex, **kwargs)
@@ -35,4 +38,6 @@ class ApexInitializeHook(BaseClosureHook, BaseHook):
         return Priority.HIGHEST
 
     def before_run(self, runner):
-        runner.model, runner.optimizer = self.func(runner.model, runner.optimizer)
+        runner.model, optimizers = self.func(runner.model, list(runner.optimizers.values()))
+        for name, optimizer in zip(runner.optimizers, optimizers):
+            runner.optimizers[name] = optimizer

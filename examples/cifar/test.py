@@ -37,7 +37,7 @@ def main():
     model = experiment.model
     load_checkpoint(model, args.checkpoint, map_location='cpu')
 
-    batch_processor = CIFARBatchProcessor()
+    batch_processor = CIFARBatchProcessor(cfg)
 
     outputs = multi_gpu_test(model, data_loader, batch_processor)
     outputs = collect_results(outputs, len(data_loader.dataset))

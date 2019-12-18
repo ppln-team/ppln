@@ -8,8 +8,10 @@ from ..utils.checkpoint import save_checkpoint
 from ..utils.misc import master_only
 from .base import BaseHook
 from .priority import Priority
+from .registry import HOOKS
 
 
+@HOOKS.register_module
 class CheckpointHook(BaseHook):
     def __init__(self, metric_name, mode, num_checkpoints=5, save_optimizer=True, out_dir=None, **kwargs):
         self.mode = mode
@@ -71,5 +73,5 @@ class CheckpointHook(BaseHook):
     def _save_checkpoint(self, runner):
         self.meta.update(epoch=runner.epoch + 1, iter=runner.iter)
 
-        optimizer = runner.optimizer if self.save_optimizer else None
-        save_checkpoint(runner.model, self.current_filepath(runner), optimizer=optimizer, meta=self.meta)
+        optimizers = runner.optimizers if self.save_optimizer else None
+        save_checkpoint(runner.model, self.current_filepath(runner), optimizer=optimizers, meta=self.meta)
