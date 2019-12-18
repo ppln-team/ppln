@@ -2,7 +2,7 @@ import torch.distributed as dist
 from torch.utils.data import DataLoader
 
 from .data.transforms import make_albumentations
-from .factory import make_model, make_optimizer
+from .factory import make_model
 from .hooks import DistSamplerSeedHook, IterTimerHook, LogBufferHook
 
 
@@ -12,8 +12,8 @@ class BaseExperiment:
         self._model = None
 
     @property
-    def optimizer(self):
-        return make_optimizer(self.model, self.cfg.optimizer)
+    def optimizers(self):
+        raise NotImplementedError
 
     @property
     def model(self):
@@ -39,6 +39,7 @@ class BaseExperiment:
             batch_size=self.cfg.data.images_per_gpu,
             num_workers=self.cfg.data.workers_per_gpu,
             pin_memory=self.cfg.data.pin_memory,
+            drop_last=mode == 'train'
         )
 
     @property

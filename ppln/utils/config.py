@@ -2,6 +2,7 @@ import os.path as osp
 import sys
 from argparse import ArgumentParser
 from importlib import import_module
+from pprint import pformat
 
 from addict import Dict
 
@@ -106,7 +107,7 @@ class Config(object):
         return self._text
 
     def __repr__(self):
-        return 'Config (path: {}): {}'.format(self.filename, self._cfg_dict.__repr__())
+        return 'Config (path: {}): {}'.format(self.filename, pformat(self._cfg_dict))
 
     def __len__(self):
         return len(self._cfg_dict)

@@ -7,8 +7,10 @@ from ..fileio import io
 from ..utils.misc import get_dist_info
 from .base import BaseHook
 from .priority import Priority
+from .registry import HOOKS
 
 
+@HOOKS.register_module
 class LogBufferHook(BaseHook):
     @property
     def priority(self):

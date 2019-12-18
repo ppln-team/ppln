@@ -15,7 +15,7 @@ run: ## Run container in omen
 		-itd \
 		--ipc=host \
 		--name=$(CONTAINER_NAME) \
-		-v /home/videoanalytics/data:/data \
+		-v /home/amirassov/data:/data \
 		-v $(shell pwd):/ppln $(APP_NAME) bash
 
 exec: ## Run a bash in a running container

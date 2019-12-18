@@ -1,8 +1,10 @@
 import time
 
 from .base import BaseHook
+from .registry import HOOKS
 
 
+@HOOKS.register_module
 class IterTimerHook(BaseHook):
     def before_epoch(self, runner):
         self.t = time.time()

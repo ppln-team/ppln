@@ -1,3 +1,5 @@
+experiment_name = 'ResNet18'
+
 # model settings
 model = dict(type='torchvision.models.resnet18', pretrained=True)
 
@@ -32,7 +34,7 @@ dist_params = dict(backend='nccl')
 optimizer = dict(type='torch.optim.Adam', lr=3e-4)
 
 # runtime settings
-work_dir = '/data/demo'
+work_dir = f'/data/dumps/{experiment_name}'
 total_epochs = 20
 resume_from = None
 load_from = None
@@ -41,17 +43,18 @@ load_from = None
 hooks = [
     dict(type='ProgressBarLoggerHook', bar_width=10),
     dict(type='TextLoggerHook'),
-    dict(type='CheckpointHook', num_checkpoints=5, metric_name='acc_top5', mode='max'),
+    dict(type='TensorboardLoggerHook', log_dir=f'/data/dumps/{experiment_name}'),
+    dict(type='CheckpointHook', num_checkpoints=5, metric_name='acc_top1', mode='max'),
     dict(
         type='ReduceLROnPlateauHook',
         warmup='linear',
         warmup_iters=1000,
-        warmup_ratio=0.33,
+        warmup_ratio=0.1,
         metric_name='loss',
-        mode='max',
-        patience=0
+        mode='min',
+        patience=3
     ),
-    dict(type='ApexInitializeHook', opt_level='O1', loss_scale=512.0),
+    dict(type='ApexInitializeHook', opt_level='O1', loss_scale=128.0),
     dict(type='ApexDDPHook', delay_allreduce=True),
     dict(type='ApexOptimizerHook', grad_clip=None)
 ]

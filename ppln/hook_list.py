@@ -1,5 +1,5 @@
-from . import hooks as all_hooks
 from .hooks import BaseHook
+from .hooks.registry import HOOKS
 from .utils.misc import object_from_dict
 
 
@@ -9,9 +9,9 @@ class HookList:
         for hook in hooks:
             self.add(hook)
 
-    def __call__(self, runner, action):
+    def call(self, action):
         for hook in self.hooks:
-            getattr(hook, action)(runner)
+            getattr(hook, action)(self)
 
     def add(self, hook):
         """Add a hook into the hook list.
@@ -19,7 +19,7 @@ class HookList:
             hook (:obj:`Hook`): The hook to be registered.
         """
         if isinstance(hook, dict):
-            hook = object_from_dict(hook, all_hooks)
+            hook = object_from_dict(hook, HOOKS)
         elif not isinstance(hook, BaseHook):
             raise TypeError
 
