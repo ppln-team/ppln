@@ -11,8 +11,8 @@ class GANExperiment(BaseExperiment):
     @property
     def optimizers(self):
         return {
-            'D': make_optimizer(self.model.D, self.cfg.optimizer.D),
-            'G': make_optimizer(self.model.G, self.cfg.optimizer.G)
+            'D': make_optimizer(self.model['D'], self.cfg.optimizer.D),
+            'G': make_optimizer(self.model['G'], self.cfg.optimizer.G)
         }
 
     def dataset(self, mode):

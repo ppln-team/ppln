@@ -69,14 +69,11 @@ class Discriminator(nn.Module):
         return x.view(-1, 1).squeeze(1)
 
 
-class DCGAN(nn.Module):
+class DCGAN(nn.ModuleDict):
     def __init__(self, n_latent, n_g_features, n_d_features, n_channels):
         super().__init__()
-        self.D = Discriminator(n_d_features, n_channels)
-        self.G = Generator(n_latent, n_g_features, n_channels)
+        self['D'] = Discriminator(n_d_features, n_channels)
+        self['G'] = Generator(n_latent, n_g_features, n_channels)
 
     def forward(self, x, mode):
-        if mode == 'G':
-            return self.G(x)
-        else:
-            return self.D(x)
+        return self[mode](x)
