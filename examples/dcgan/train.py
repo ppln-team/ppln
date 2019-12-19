@@ -21,7 +21,6 @@ def main():
     init_dist(**cfg.dist_params)
 
     experiment = GANExperiment(cfg)
-    print(experiment.hooks)
     runner = Runner(
         model=experiment.model,
         optimizers=experiment.optimizers,
