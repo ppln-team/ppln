@@ -87,7 +87,7 @@ class LrSchedulerHook(BaseHook, WarmupLrScheduler):
                 _set_lr(runner.optimizers[self.name], self.regular_lr)
             else:
                 warmup_lr = self.get_warmup_lr(cur_iter, self.regular_lr)
-                _set_lr(runner, warmup_lr)
+                _set_lr(runner.optimizers[self.name], warmup_lr)
 
 
 @HOOKS.register_module

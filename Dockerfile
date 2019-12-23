@@ -48,7 +48,8 @@ RUN pip install --no-cache-dir \
     click \
     jpeg4py \
     addict \
-    colorama
+    colorama \
+    mlflow
 
 RUN git clone https://github.com/NVIDIA/apex && \
     cd apex && \
