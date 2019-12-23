@@ -34,7 +34,7 @@ setup(
     packages=find_packages(),
     install_requires=[
         'torchvision', 'torch>=1.1', 'tqdm', 'PyYAML', 'colorama', 'addict', 'jpeg4py', 'opencv-python',
-        'albumentations', 'tensorboard'
+        'albumentations', 'tensorboard', 'mlflow>=1.4'
     ],
     setup_requires=['pytest-runner'],
     python_requires='>=3.6.0'
