@@ -1,7 +1,7 @@
 import warnings
 
 from ..factory import make_apex
-from .base import BaseClosureHook, BaseHook
+from .base import BaseClosureHook
 from .optimizer import OptimizerHook
 from .priority import Priority
 from .registry import HOOKS
@@ -23,13 +23,13 @@ class ApexOptimizerHook(OptimizerHook):
         with amp.scale_loss(runner.outputs[f'{self.name}_loss'], runner.optimizers[self.name]) as scaled_loss:
             scaled_loss.backward()
 
-        if self.grad_clip is not None:
-            self.clip_grads(amp.master_params(runner.optimizers[self.name]))
+        if self.is_clip:
+            self.func(amp.master_params(runner.optimizers[self.name]))
         runner.optimizers[self.name].step()
 
 
 @HOOKS.register_module
-class ApexInitializeHook(BaseClosureHook, BaseHook):
+class ApexInitializeHook(BaseClosureHook):
     def __init__(self, **kwargs):
         super().__init__(make_apex, **kwargs)
 
