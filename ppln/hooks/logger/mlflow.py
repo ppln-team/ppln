@@ -20,10 +20,10 @@ class MlFlowLoggerHook(BaseLoggerHook):
     def log_lr(self, lr_dict):
         for optimizer_name, lrs in lr_dict.items():
             if len(lrs) == 1:
-                mlflow.log_metric(f"{optimizer_name}_lr", lrs[0])
+                mlflow.log_metric(f'{optimizer_name}_lr', lrs[0])
             else:
                 for i, lr in enumerate(lrs):
-                    mlflow.log_metric(f"{optimizer_name}_{i}_lr", lr)
+                    mlflow.log_metric(f'{optimizer_name}_{i}_lr', lr)
 
     @master_only
     def log(self, runner):
@@ -37,7 +37,7 @@ class MlFlowLoggerHook(BaseLoggerHook):
             else:
                 mlflow.log_metric(tag, record, runner.epoch)
 
-            if runner.mode == "train":
+            if runner.mode == 'train':
                 lr_dict = get_lr(runner.optimizers)
                 self.log_lr(lr_dict)
 

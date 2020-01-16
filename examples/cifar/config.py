@@ -55,6 +55,7 @@ hooks = [
         patience=3
     ),
     dict(type='ApexInitializeHook', opt_level='O1', loss_scale=128.0),
-    dict(type='ApexDDPHook', delay_allreduce=True),
-    dict(type='ApexOptimizerHook', grad_clip=None)
+    dict(type='ApexOptimizerHook', grad_clip=None),
+    dict(type='ApexSyncBNHook'),
+    dict(type='ApexDDPHook', delay_allreduce=True)
 ]
