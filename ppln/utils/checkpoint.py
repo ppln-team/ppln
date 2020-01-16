@@ -5,7 +5,8 @@ from collections import OrderedDict
 
 import torch
 
-from ppln import __version__
+from .. import __version__
+from .misc import get_dist_info
 
 
 def load_state_dict(module, state_dict, strict=False):
@@ -38,17 +39,23 @@ def load_state_dict(module, state_dict, strict=False):
                 'whose dimensions in the model are {} and '
                 'whose dimensions in the checkpoint are {}.'.format(name, own_state[name].size(), param.size())
             )
-        missing_keys = set(own_state.keys()) - set(state_dict.keys())
 
-        err_msg = []
-        if unexpected_keys:
-            err_msg.append('unexpected key in source state_dict: {}\n'.format(', '.join(unexpected_keys)))
-        if missing_keys:
-            err_msg.append('missing keys in source state_dict: {}\n'.format(', '.join(missing_keys)))
+    missing_keys = set(own_state.keys()) - set(state_dict.keys())
 
+    err_msg = []
+    if unexpected_keys:
+        err_msg.append('unexpected key in source state_dict: {}\n'.format(', '.join(unexpected_keys)))
+    if missing_keys:
+        err_msg.append('missing keys in source state_dict: {}\n'.format(', '.join(missing_keys)))
+
+    rank, _ = get_dist_info()
+    if err_msg and rank == 0:
+        err_msg.insert(0, 'The model and loaded state dict do not match exactly\n')
         err_msg = '\n'.join(err_msg)
-        if err_msg and strict:
+        if strict:
             raise RuntimeError(err_msg)
+        else:
+            print(err_msg)
 
 
 def load_checkpoint(model, filename, map_location=None, strict=False):
