@@ -2,6 +2,7 @@ from .apex import ApexInitializeHook, ApexOptimizerHook
 from .base import BaseClosureHook, BaseHook
 from .checkpoint import CheckpointHook
 from .dist import ApexDDPHook, ApexSyncBNHook, BaseDistClosureHook, PytorchDDPHook, PytorchSyncBNHook
+from .early_stopping import EarlyStoppingHook
 from .log_buffer import LogBufferHook
 from .logger import ProgressBarLoggerHook, TensorboardLoggerHook, TextLoggerHook
 from .lr_scheduler import (
@@ -19,5 +20,6 @@ __all__ = [
     'TensorboardLoggerHook', 'TextLoggerHook', 'CosineLrSchedulerHook', 'ExpLrSchedulerHook', 'FixedLrSchedulerHook',
     'InvLrSchedulerHook', 'LrSchedulerHook', 'PolyLrSchedulerHook', 'StepLrSchedulerHook', 'OptimizerHook', 'Priority',
     'IterTimerHook', 'ApexOptimizerHook', 'ReduceLROnPlateauHook', 'ApexInitializeHook', 'ApexDDPHook',
-    'PytorchDDPHook', 'BaseDistClosureHook', 'BaseClosureHook', 'HOOKS', 'ApexSyncBNHook', 'PytorchSyncBNHook'
+    'PytorchDDPHook', 'BaseDistClosureHook', 'BaseClosureHook', 'HOOKS', 'ApexSyncBNHook', 'PytorchSyncBNHook',
+    'EarlyStoppingHook'
 ]

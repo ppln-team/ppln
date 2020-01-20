@@ -7,7 +7,7 @@ from .registry import HOOKS
 @HOOKS.register_module
 class OptimizerHook(BaseClosureHook):
     def __init__(self, name='base', **kwargs):
-        super().__init__(clip_grad.clip_grad_norm, **kwargs)
+        super().__init__(clip_grad.clip_grad_norm_, **kwargs)
         self.name = name
         self.is_clip = len(kwargs) > 0
 

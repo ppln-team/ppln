@@ -50,12 +50,13 @@ hooks = [
         warmup='linear',
         warmup_iters=1000,
         warmup_ratio=0.1,
-        metric_name='loss',
+        metric_name='base_loss',
         mode='min',
         patience=3
     ),
     dict(type='ApexInitializeHook', opt_level='O1', loss_scale=128.0),
     dict(type='ApexOptimizerHook', max_norm=1),
     dict(type='ApexSyncBNHook'),
-    dict(type='ApexDDPHook', delay_allreduce=True)
+    dict(type='ApexDDPHook', delay_allreduce=True),
+    dict(type='EarlyStoppingHook', metric_name='base_loss', patience=1, verbose=True, mode='max')
 ]

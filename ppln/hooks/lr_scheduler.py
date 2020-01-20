@@ -92,7 +92,7 @@ class LrSchedulerHook(BaseHook, WarmupLrScheduler):
 
 @HOOKS.register_module
 class ReduceLROnPlateauHook(BaseHook, WarmupLrScheduler):
-    def __init__(self, name='base', metric_name='main_loss', warmup=None, warmup_iters=0, warmup_ratio=0.1, **kwargs):
+    def __init__(self, name='base', metric_name='base_loss', warmup=None, warmup_iters=0, warmup_ratio=0.1, **kwargs):
         super().__init__(warmup=warmup, warmup_iters=warmup_iters, warmup_ratio=warmup_ratio)
         self.name = name
         self.metric_name = metric_name
