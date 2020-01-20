@@ -13,18 +13,20 @@ from .registry import HOOKS
 
 @HOOKS.register_module
 class CheckpointHook(BaseHook):
-    def __init__(self, metric_name, mode, num_checkpoints=5, save_optimizer=True, out_dir=None, **kwargs):
+    def __init__(
+        self, metric_name, mode, num_checkpoints=5, save_optimizer=True, out_dir=None, verbose=True, **kwargs
+    ):
         self.mode = mode
         self.save_optimizer = save_optimizer
         self.out_dir = out_dir
         self.meta = kwargs
         self._checkpoints = PriorityQueue(num_checkpoints)
-        self._metric_name = metric_name
+        self.metric_name = metric_name
         self._best_metric = -np.infty
 
     @property
     def priority(self):
-        return Priority.LOWEST
+        return Priority.VERY_LOW
 
     def before_run(self, runner):
         if not self.out_dir:
@@ -39,7 +41,7 @@ class CheckpointHook(BaseHook):
 
     @master_only
     def after_val_epoch(self, runner):
-        metric = runner.log_buffer.output[self._metric_name]
+        metric = runner.log_buffer.output[self.metric_name]
 
         if self.mode == 'min':
             metric *= -1

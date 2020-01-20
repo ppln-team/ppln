@@ -40,7 +40,7 @@ class CIFARBatchProcessor(BaseBatchProcessor):
 
         return dict(
             base_loss=loss,
-            values=dict(loss=loss.item(), **accuracy(prediction, target, topk=(1, 5))),
+            values=dict(base_loss=loss.item(), **accuracy(prediction, target, topk=(1, 5))),
             num_samples=batch['image'].size(0)
         )
 

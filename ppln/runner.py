@@ -39,6 +39,7 @@ class Runner(HookList):
         self.inner_iter = 0
         self.max_epochs = 0
         self.max_iters = 0
+        self.stop_training = False
 
     @staticmethod
     def init_optimizers(optimizers):
@@ -73,6 +74,8 @@ class Runner(HookList):
         for self.epoch in range(self.epoch, max_epochs):
             for self.mode, self.data_loader in data_loaders.items():
                 self.run_mode(**kwargs)
+            if self.stop_training:
+                break
         self.call('after_run')
 
     def run_mode(self, **kwargs):
