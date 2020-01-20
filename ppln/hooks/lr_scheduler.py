@@ -2,7 +2,7 @@ from math import cos, pi
 
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
-from .base import BaseHook
+from .base import BaseClosureHook, BaseHook
 from .registry import HOOKS
 
 
@@ -88,6 +88,31 @@ class LrSchedulerHook(BaseHook, WarmupLrScheduler):
             else:
                 warmup_lr = self.get_warmup_lr(cur_iter, self.regular_lr)
                 _set_lr(runner.optimizers[self.name], warmup_lr)
+
+
+@HOOKS.register_module
+class PytorchLRSchedulerHook(BaseHook):
+    def __init__(self, name='base'):
+        super().__init__()
+        self.name = name
+
+    def before_run(self, runner):
+        self.scheduler = ReduceLROnPlateau(optimizer=runner.optimizers[self.name], **self.kwargs)
+        self.regular_lr = [group['lr'] for group in runner.optimizers[self.name].param_groups]
+
+    def before_train_iter(self, runner):
+        cur_iter = runner.iter
+
+        if self.warmup is None or cur_iter > self.warmup_iters:
+            return
+        elif cur_iter == self.warmup_iters:
+            _set_lr(runner.optimizers[self.name], self.regular_lr)
+        else:
+            warmup_lr = self.get_warmup_lr(cur_iter, self.regular_lr)
+            _set_lr(runner.optimizers[self.name], warmup_lr)
+
+    def after_val_epoch(self, runner):
+        self.scheduler.step(runner.log_buffer.output[self.metric_name])
 
 
 @HOOKS.register_module

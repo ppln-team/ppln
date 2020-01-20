@@ -5,7 +5,7 @@ from torch.utils.data.distributed import DistributedSampler
 from cifar.dataset import CustomCIFAR10
 from ppln.batch_processor import BaseBatchProcessor
 from ppln.experiment import BaseExperiment
-from ppln.factory import make_optimizer
+from ppln.factory import make_optimizer, make_scheduler
 from ppln.metrics.accuracy import accuracy
 from ppln.utils.misc import get_dist_info
 
@@ -14,6 +14,13 @@ class CIFARExperiment(BaseExperiment):
     @property
     def optimizers(self):
         return {'base': make_optimizer(self.model, self.cfg.optimizer)}
+
+    @property
+    def schedulers(self):
+        schedulers = {}
+        for name, optimizer in self.optimizers:
+            schedulers[name] = make_scheduler(optimizer, self.cfg.scheduler['name'])
+        return schedulers
 
     def dataset(self, mode):
         return CustomCIFAR10(root=self.cfg.data.data_root, train=mode == 'train', transform=self.transform(mode))

@@ -4,6 +4,8 @@ import time
 from collections import OrderedDict
 
 import torch
+from torch.optim.lr_scheduler import _LRScheduler
+from torch.optim.optimizer import Optimizer
 
 from .. import __version__
 from .misc import get_dist_info
@@ -58,7 +60,15 @@ def load_state_dict(module, state_dict, strict=False):
             print(err_msg)
 
 
-def load_checkpoint(model, filename, map_location=None, strict=False):
+def load_optim_state_dict(obj, state_dict, obj_type):
+    if isinstance(obj, dict):
+        for name in obj:
+            obj[name].load_state_dict(state_dict[name])
+    elif isinstance(obj, obj_type):
+        obj.load_state_dict(state_dict)
+
+
+def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=None, scheduler=None):
     """Load checkpoint from a file or URI."""
     checkpoint = torch.load(filename, map_location=map_location)
 
@@ -79,6 +89,12 @@ def load_checkpoint(model, filename, map_location=None, strict=False):
         load_state_dict(model.module, state_dict, strict)
     else:
         load_state_dict(model, state_dict, strict)
+
+    if 'optimizer' in state_dict and optimizer is not None:
+        load_optim_state_dict(optimizer, state_dict['optimizer'], Optimizer)
+    if 'scheduler' in state_dict and scheduler is not None:
+        load_optim_state_dict(scheduler, state_dict['scheduler'], _LRScheduler)
+
     return checkpoint
 
 
@@ -95,7 +111,16 @@ def weights_to_cpu(state_dict):
     return state_dict_cpu
 
 
-def save_checkpoint(model, filename, optimizer=None, meta=None):
+def make_optim_state_dict(data, data_type):
+    if isinstance(data, dict):
+        state_dict = {}
+        for k, v in data.items():
+            state_dict[k] = v.state_dict()
+    elif isinstance(data, data_type):
+        return data.state_dict()
+
+
+def save_checkpoint(model, filename, optimizer=None, scheduler=None, meta=None):
     """Save checkpoint to file.
     The checkpoint will have 3 fields: ``meta``, ``state_dict`` and
     ``optimizer``. By default ``meta`` will contain __version__.py and time info.
@@ -103,6 +128,7 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
         model (Module): Module whose params are to be saved.
         filename (str): Checkpoint filename.
         optimizer (:obj:`Optimizer`, optional): Optimizer to be saved.
+        scheduler (:obj:`Scheduler`, optional): Scheduler to be saved.
         meta (dict, optional): Metadata to be saved in checkpoint.
     """
     if meta is None:
@@ -115,12 +141,12 @@ def save_checkpoint(model, filename, optimizer=None, meta=None):
     if hasattr(model, 'module'):
         model = model.module
 
-    checkpoint = {'meta': meta, 'state_dict': weights_to_cpu(model.state_dict())}
-    if isinstance(optimizer, dict):
-        checkpoint['optimizer'] = {}
-        for name, opt in optimizer.items():
-            checkpoint['optimizer'][name] = opt.state_dict()
-    elif isinstance(optimizer, torch.optim.Optimizer):
-        checkpoint['optimizer'] = optimizer.state_dict()
-
+    checkpoint = {
+        'meta': meta,
+        'state_dict': weights_to_cpu(model.state_dict()),
+    }
+    if optimizer is not None:
+        checkpoint['optimizer'] = make_optim_state_dict(optimizer, Optimizer)
+    if scheduler is not None:
+        checkpoint['scheduler'] = make_optim_state_dict(scheduler, _LRScheduler)
     torch.save(checkpoint, filename)

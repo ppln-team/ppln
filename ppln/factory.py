@@ -4,7 +4,8 @@ import warnings
 
 import torch
 from torch.nn.parallel import DistributedDataParallel as PytorchDDP
-
+from torch.optim.optimizer import Optimizer
+from torch.optim.lr_scheduler import _LRScheduler
 from .utils.misc import get_dist_info, get_timestamp, object_from_dict
 
 try:
@@ -39,9 +40,14 @@ def make_apex(model, optimizer=None, **kwargs):
         return model, optimizer
 
 
-def make_optimizer(model: torch.nn.Module, config: dict) -> torch.optim.Optimizer:
+def make_optimizer(model: torch.nn.Module, config: dict) -> Optimizer:
     optimizer = object_from_dict(config, params=filter(lambda x: x.requires_grad, model.parameters()))
     return optimizer
+
+
+def make_scheduler(optimizer: Optimizer, config: dict) -> _LRScheduler:
+    scheduler = object_from_dict(config, optimizer=optimizer)
+    return scheduler
 
 
 def make_file_handler(logger, filename=None, mode='w', level=logging.INFO):

@@ -58,5 +58,5 @@ hooks = [
     dict(type='ApexOptimizerHook', max_norm=1),
     dict(type='ApexSyncBNHook'),
     dict(type='ApexDDPHook', delay_allreduce=True),
-    dict(type='EarlyStoppingHook', metric_name='base_loss', patience=1, verbose=True, mode='max')
+    dict(type='EarlyStoppingHook', metric_name='base_loss', patience=10, verbose=True, mode='min')
 ]

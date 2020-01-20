@@ -3,11 +3,18 @@ from torch.utils.data.distributed import DistributedSampler
 from torchvision import datasets
 
 from ppln.experiment import BaseExperiment
-from ppln.factory import make_optimizer
+from ppln.factory import make_optimizer, make_scheduler
 from ppln.utils.misc import get_dist_info
 
 
 class GANExperiment(BaseExperiment):
+    @property
+    def schedulers(self):
+        return {
+            'D': make_scheduler(self.model['D'], self.cfg.optimizer.D),
+            'G': make_scheduler(self.model['G'], self.cfg.optimizer.G)
+        }
+
     @property
     def optimizers(self):
         return {
