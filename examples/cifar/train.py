@@ -10,6 +10,7 @@ def parse_args():
     parser = ArgumentParser(description='Train CIFAR-10 classification')
     parser.add_argument('config', help='train config file path')
     parser.add_argument('--local_rank', type=int, default=0)
+    parser.add_argument('--stage', type=int, default=0)
     return parser.parse_args()
 
 
@@ -18,11 +19,15 @@ def main():
     cfg = Config.fromfile(args.config)
     init_dist(**cfg.dist_params)
 
+    if 'stages' in cfg:
+        cfg = cfg.stages[args.stage]
+
     experiment = CIFARExperiment(cfg)
 
     runner = Runner(
         model=experiment.model,
         optimizers=experiment.optimizers,
+        schedulers=experiment.schedulers,
         batch_processor=CIFARBatchProcessor(cfg),
         hooks=experiment.hooks,
         work_dir=experiment.work_dir
@@ -33,9 +38,7 @@ def main():
             'train': experiment.dataloader('train'),
             'val': experiment.dataloader('val')
         },
-        max_epochs=cfg.total_epochs,
-        resume_from=cfg.resume_from,
-        load_from=cfg.load_from
+        max_epochs=cfg.max_epochs
     )
 
 

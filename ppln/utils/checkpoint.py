@@ -90,10 +90,10 @@ def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=
     else:
         load_state_dict(model, state_dict, strict)
 
-    if 'optimizer' in state_dict and optimizer is not None:
-        load_optim_state_dict(optimizer, state_dict['optimizer'], Optimizer)
-    if 'scheduler' in state_dict and scheduler is not None:
-        load_optim_state_dict(scheduler, state_dict['scheduler'], _LRScheduler)
+    if 'optimizer' in checkpoint and optimizer is not None:
+        load_optim_state_dict(optimizer, checkpoint['optimizer'], Optimizer)
+    if 'scheduler' in checkpoint and scheduler is not None:
+        load_optim_state_dict(scheduler, checkpoint['scheduler'], _LRScheduler)
 
     return checkpoint
 
@@ -113,9 +113,7 @@ def weights_to_cpu(state_dict):
 
 def make_optim_state_dict(data, data_type):
     if isinstance(data, dict):
-        state_dict = {}
-        for k, v in data.items():
-            state_dict[k] = v.state_dict()
+        return {k: v.state_dict() for k, v in data.items()}
     elif isinstance(data, data_type):
         return data.state_dict()
 

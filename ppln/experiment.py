@@ -1,34 +1,32 @@
-import torch.distributed as dist
-from torch.utils.data import DataLoader
 from typing import Dict
-from .data.transforms import make_albumentations
-from .factory import make_model, make_scheduler
-from .hooks import DistSamplerSeedHook, IterTimerHook, LogBufferHook
+
+import torch.distributed as dist
+from torch import nn
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
+from torch.utils.data import DataLoader
+
+from .data.transforms import make_albumentations
+from .factory import make_model
+from .hooks import DistSamplerSeedHook, IterTimerHook, LogBufferHook
+from .utils.misc import cached_property
+
 
 class BaseExperiment:
     def __init__(self, cfg):
         self.cfg = cfg
-        self._model = None
-        self._optimizers = None
 
-    @property
+    @cached_property
     def optimizers(self) -> Dict[str, Optimizer]:
         raise NotImplementedError
 
     @property
     def schedulers(self) -> Dict[str, _LRScheduler]:
-        schedulers = {}
-        for name, optimizer in self.optimizers:
-            schedulers[name] = make_scheduler(optimizer, self.cfg.schedulers[name])
-        return schedulers
+        raise NotImplementedError
 
-    @property
-    def model(self):
-        if self._model is None:
-            self._model = make_model(self.cfg.model)
-        return self._model
+    @cached_property
+    def model(self) -> nn.Module:
+        return make_model(self.cfg.model)
 
     def transform(self, mode):
         return make_albumentations(self.cfg.transforms[mode])

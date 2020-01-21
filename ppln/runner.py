@@ -1,16 +1,15 @@
 import os
 from logging import Logger
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import torch
-from torch.optim.lr_scheduler import _LRScheduler
+from torch.optim.lr_scheduler import ReduceLROnPlateau, _LRScheduler
 from torch.optim.optimizer import Optimizer
 
 from .batch_processor import BaseBatchProcessor
 from .factory import make_logger
 from .hook_list import HookList
 from .hooks import BaseHook
-from .utils.checkpoint import load_checkpoint
 from .utils.log_buffer import LogBuffer
 
 
@@ -53,7 +52,7 @@ class Runner(HookList):
 
     @staticmethod
     def init_schedulers(schedulers):
-        if isinstance(schedulers, _LRScheduler):
+        if isinstance(schedulers, (_LRScheduler, ReduceLROnPlateau)):
             schedulers = {'base': schedulers}
         return schedulers
 
@@ -71,16 +70,8 @@ class Runner(HookList):
     def train_mode(self) -> bool:
         return self.mode == 'train'
 
-    def run(self, data_loaders, max_epochs, resume_from=None, load_from=None, **kwargs):
+    def run(self, data_loaders, max_epochs, **kwargs):
         """Start running"""
-        if resume_from is not None:
-            self.logger.info(f'resume from {resume_from}')
-            self.logger.info(f'resumed epoch: {self.epoch}, iter: {self.iter}')
-            self.resume(resume_from)
-        elif load_from is not None:
-            self.logger.info(f'load checkpoint from {load_from}')
-            load_checkpoint(self.model, load_from, map_location='cpu', strict=False)
-
         self.max_epochs = max_epochs
 
         self.call('before_run')
@@ -111,15 +102,3 @@ class Runner(HookList):
 
         if self.train_mode:
             self.iter += 1
-
-    def resume(self, checkpoint):
-        load_checkpoint(
-            self.model,
-            checkpoint,
-            map_location='cpu',
-            strict=False,
-            optimizer=self.optimizers,
-            scheduler=self.schedulers
-        )
-        self.epoch = checkpoint['meta']['epoch']
-        self.iter = checkpoint['meta']['iter']

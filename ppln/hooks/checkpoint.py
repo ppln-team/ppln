@@ -53,6 +53,15 @@ class CheckpointHook(BaseHook):
         if self._best_metric < metric:
             self._best_metric = metric
             self._save_link(runner)
+            runner.logger.info(
+                f'Best checkpoint was changed: {self.current_filename(runner)} with {self._best_metric}'
+            )
+
+    def after_run(self, runner):
+        runner.logger.info(f'Best checkpoints:')
+        while not self._checkpoints.empty():
+            metric, filename = self._checkpoints.get()
+            runner.logger.info(f'{filename}: {metric}')
 
     def _is_update(self, metric):
         if not self._checkpoints.full():
