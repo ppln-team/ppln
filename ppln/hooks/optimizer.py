@@ -1,11 +1,16 @@
 from torch.nn.utils import clip_grad
 
 from .base import BaseClosureHook
+from .priority import Priority
 from .registry import HOOKS
 
 
 @HOOKS.register_module
 class OptimizerHook(BaseClosureHook):
+    @property
+    def priority(self):
+        return Priority.HIGH
+
     def __init__(self, name='base', **kwargs):
         super().__init__(clip_grad.clip_grad_norm_, **kwargs)
         self.name = name

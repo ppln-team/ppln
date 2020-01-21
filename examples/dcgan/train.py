@@ -24,17 +24,13 @@ def main():
     runner = Runner(
         model=experiment.model,
         optimizers=experiment.optimizers,
+        schedulers=experiment.schedulers,
         batch_processor=GANBatchProcessor(cfg),
         hooks=experiment.hooks,
         work_dir=experiment.work_dir
     )
 
-    runner.run(
-        data_loaders={'train': experiment.dataloader('train')},
-        max_epochs=cfg.total_epochs,
-        resume_from=cfg.resume_from,
-        load_from=cfg.load_from
-    )
+    runner.run(data_loaders={'train': experiment.dataloader('train')}, max_epochs=cfg.max_epochs)
 
 
 if __name__ == '__main__':

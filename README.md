@@ -8,4 +8,6 @@ Fork of [mmcv](https://github.com/open-mmlab/mmcv) library with some additional 
 * ProgressBarLoggerHook
 * Metrics synchronization during DistributedDataParallel
 * Inference
+* EarlyStoppingHook
+* Stages
 * A lot of refactoring

@@ -14,10 +14,11 @@ from .registry import HOOKS
 @HOOKS.register_module
 class CheckpointHook(BaseHook):
     def __init__(
-        self, metric_name, mode, num_checkpoints=5, save_optimizer=True, out_dir=None, verbose=True, **kwargs
+        self, metric_name, mode, num_checkpoints=5, save_optimizer=True, save_scheduler=True, out_dir=None, **kwargs
     ):
         self.mode = mode
         self.save_optimizer = save_optimizer
+        self.save_scheduler = save_scheduler
         self.out_dir = out_dir
         self.meta = kwargs
         self._checkpoints = PriorityQueue(num_checkpoints)
@@ -52,6 +53,15 @@ class CheckpointHook(BaseHook):
         if self._best_metric < metric:
             self._best_metric = metric
             self._save_link(runner)
+            runner.logger.info(
+                f'Best checkpoint was changed: {self.current_filename(runner)} with {self._best_metric}'
+            )
+
+    def after_run(self, runner):
+        runner.logger.info(f'Best checkpoints:')
+        while not self._checkpoints.empty():
+            metric, filename = self._checkpoints.get()
+            runner.logger.info(f'{filename}: {metric}')
 
     def _is_update(self, metric):
         if not self._checkpoints.full():
@@ -76,4 +86,7 @@ class CheckpointHook(BaseHook):
         self.meta.update(epoch=runner.epoch + 1, iter=runner.iter)
 
         optimizers = runner.optimizers if self.save_optimizer else None
-        save_checkpoint(runner.model, self.current_filepath(runner), optimizer=optimizers, meta=self.meta)
+        schedulers = runner.schedulers if self.save_scheduler else None
+        save_checkpoint(
+            runner.model, self.current_filepath(runner), optimizer=optimizers, scheduler=schedulers, meta=self.meta
+        )

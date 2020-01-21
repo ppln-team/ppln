@@ -22,11 +22,14 @@ optimizer = dict(
     G=dict(type='torch.optim.Adam', lr=0.0002, betas=(0.5, 0.999))
 )
 
+scheduler = dict(
+    D=dict(type='torch.optim.lr_scheduler.StepLR', step_size=5),
+    G=dict(type='torch.optim.lr_scheduler.StepLR', step_size=5)
+)
+
 # runtime settings
 work_dir = f'/data/dumps/{experiment_name}'
-total_epochs = 10
-resume_from = None
-load_from = None
+max_epochs = 10
 
 # hook settings
 hooks = [
@@ -35,6 +38,6 @@ hooks = [
     dict(type='GANTensorboardLoggerHook', log_dir=work_dir, n_latent=n_latent),
     dict(type='ApexInitializeHook', opt_level='O1', loss_scale=128.0),
     dict(type='ApexDDPHook', delay_allreduce=True),
-    dict(type='ApexOptimizerHook', grad_clip=None, name='G'),
-    dict(type='ApexOptimizerHook', grad_clip=None, name='D')
+    dict(type='ApexOptimizerHook', max_norm=1, name='G'),
+    dict(type='ApexOptimizerHook', max_norm=1, name='D')
 ]

@@ -41,4 +41,4 @@ class EarlyStoppingHook(BaseHook):
 
     def after_run(self, runner):
         if self._stopped_epoch > 0 and self.verbose > 0:
-            runner.logger.info(f'Epoch {self._stopped_epoch}: early stopping')
+            runner.logger.info(f'Epoch {self._stopped_epoch + 1}: early stopping')

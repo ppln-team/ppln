@@ -1,14 +1,15 @@
 import os
 from logging import Logger
-from typing import Any, Dict, List, Optional, Union
+from typing import Dict, List, Optional, Union
 
 import torch
+from torch.optim.lr_scheduler import ReduceLROnPlateau, _LRScheduler
+from torch.optim.optimizer import Optimizer
 
 from .batch_processor import BaseBatchProcessor
 from .factory import make_logger
 from .hook_list import HookList
 from .hooks import BaseHook
-from .utils.checkpoint import load_checkpoint
 from .utils.log_buffer import LogBuffer
 
 
@@ -16,7 +17,8 @@ class Runner(HookList):
     def __init__(
         self,
         model: torch.nn.Module,
-        optimizers: Union[torch.optim.Optimizer, Dict[str, torch.optim.Optimizer]],
+        optimizers: Union[Optimizer, Dict[str, Optimizer]],
+        schedulers: Union[_LRScheduler, Dict[str, _LRScheduler]],
         batch_processor: BaseBatchProcessor,
         hooks: List[Union[Dict, BaseHook]],
         work_dir: str,
@@ -26,6 +28,7 @@ class Runner(HookList):
         self.work_dir = self.init_work_dir(work_dir)
         self.logger = self.init_logger(logger)
         self.optimizers = self.init_optimizers(optimizers)
+        self.schedulers = self.init_schedulers(schedulers)
         self.model = model
 
         self.batch_processor = batch_processor
@@ -43,9 +46,15 @@ class Runner(HookList):
 
     @staticmethod
     def init_optimizers(optimizers):
-        if isinstance(optimizers, torch.optim.Optimizer):
+        if isinstance(optimizers, Optimizer):
             optimizers = {'base': optimizers}
         return optimizers
+
+    @staticmethod
+    def init_schedulers(schedulers):
+        if isinstance(schedulers, (_LRScheduler, ReduceLROnPlateau)):
+            schedulers = {'base': schedulers}
+        return schedulers
 
     @staticmethod
     def init_work_dir(work_dir):
@@ -61,13 +70,8 @@ class Runner(HookList):
     def train_mode(self) -> bool:
         return self.mode == 'train'
 
-    def run(self, data_loaders, max_epochs, resume_from=None, load_from=None, **kwargs):
+    def run(self, data_loaders, max_epochs, **kwargs):
         """Start running"""
-        if resume_from is not None:
-            self.resume(resume_from)
-        elif load_from is not None:
-            self.load(load_from)
-
         self.max_epochs = max_epochs
 
         self.call('before_run')
@@ -98,21 +102,3 @@ class Runner(HookList):
 
         if self.train_mode:
             self.iter += 1
-
-    def resume(self, checkpoint, resume_optimizer=True, map_location='default'):
-        if map_location == 'default':
-            device_id = torch.cuda.current_device()
-            checkpoint = self.load(checkpoint, map_location=lambda storage, loc: storage.cuda(device_id))
-        else:
-            checkpoint = self.load(checkpoint, map_location=map_location)
-
-        self.epoch = checkpoint['meta']['epoch']
-        self.iter = checkpoint['meta']['iter']
-        if 'optimizer' in checkpoint and resume_optimizer:
-            for name in self.optimizers:
-                self.optimizers[name].load_state_dict(checkpoint['optimizer'][name])
-        self.logger.info(f'resumed epoch {self.epoch}, iter {self.iter}')
-
-    def load(self, filename, map_location: Any = 'cpu', strict: bool = False):
-        self.logger.info(f'load checkpoint from {filename}')
-        return load_checkpoint(self.model, filename, map_location, strict)
