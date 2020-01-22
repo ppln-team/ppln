@@ -8,6 +8,7 @@ from ..utils.misc import get_dist_info
 from .base import BaseHook
 from .priority import Priority
 from .registry import HOOKS
+import torch
 
 
 @HOOKS.register_module
@@ -52,3 +53,8 @@ class LogBufferHook(BaseHook):
         if dist.is_initialized():
             self.sync(runner)
         runner.log_buffer.average()
+        if dist.is_initialized():
+            for key, value in runner.log_buffer.output.items():
+                value_tensor = torch.tensor(value, device='cuda')
+                dist.broadcast(value_tensor, 0)
+                runner.log_buffer.output[key] = value_tensor.item()
