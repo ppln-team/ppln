@@ -3,6 +3,7 @@ import numpy as np
 from .base import BaseHook
 from .priority import Priority
 from .registry import HOOKS
+from ..utils.misc import master_only
 
 
 @HOOKS.register_module
@@ -39,6 +40,7 @@ class EarlyStoppingHook(BaseHook):
                 self._stopped_epoch = runner.epoch
                 runner.stop_training = True
 
+    @master_only
     def after_run(self, runner):
         if self._stopped_epoch > 0 and self.verbose > 0:
             runner.logger.info(f'Epoch {self._stopped_epoch + 1}: early stopping')
