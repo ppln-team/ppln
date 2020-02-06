@@ -1,6 +1,7 @@
 import os
 import os.path as osp
 
+import torch
 import torch.distributed as dist
 
 from ..fileio import io
@@ -8,7 +9,6 @@ from ..utils.misc import get_dist_info
 from .base import BaseHook
 from .priority import Priority
 from .registry import HOOKS
-import torch
 
 
 @HOOKS.register_module

@@ -1,9 +1,9 @@
 import numpy as np
 
+from ..utils.misc import master_only
 from .base import BaseHook
 from .priority import Priority
 from .registry import HOOKS
-from ..utils.misc import master_only
 
 
 @HOOKS.register_module
