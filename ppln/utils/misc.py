@@ -58,7 +58,7 @@ def object_from_dict(d, parent=None, **default_kwargs):
 
     # support nested constructions
     for key, value in kwargs.items():
-        if isinstance(value, dict) and 'type' in d:
+        if isinstance(value, dict) and 'type' in value:
             value = object_from_dict(value)
             kwargs[key] = value
 
