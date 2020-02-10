@@ -4,7 +4,7 @@ from .checkpoint import CheckpointHook
 from .dist import ApexDDPHook, ApexSyncBNHook, BaseDistClosureHook, PytorchDDPHook, PytorchSyncBNHook
 from .early_stopping import EarlyStoppingHook
 from .log_buffer import LogBufferHook
-from .logger import ProgressBarLoggerHook, TensorboardLoggerHook, TextLoggerHook
+from .logger import BaseLoggerHook, ProgressBarLoggerHook, TensorboardLoggerHook, TextLoggerHook
 from .lr_scheduler import LRSchedulerHook
 from .optimizer import OptimizerHook
 from .priority import Priority
@@ -17,5 +17,6 @@ __all__ = [
     'CheckpointHook', 'DistSamplerSeedHook', 'BaseHook', 'LogBufferHook', 'ProgressBarLoggerHook',
     'TensorboardLoggerHook', 'TextLoggerHook', 'LRSchedulerHook', 'OptimizerHook', 'Priority', 'IterTimerHook',
     'ApexOptimizerHook', 'ApexInitializeHook', 'ApexDDPHook', 'PytorchDDPHook', 'BaseDistClosureHook',
-    'BaseClosureHook', 'HOOKS', 'ApexSyncBNHook', 'PytorchSyncBNHook', 'EarlyStoppingHook', 'ResumeHook'
+    'BaseClosureHook', 'HOOKS', 'ApexSyncBNHook', 'PytorchSyncBNHook', 'EarlyStoppingHook', 'ResumeHook',
+    'BaseLoggerHook'
 ]

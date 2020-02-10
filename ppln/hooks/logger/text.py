@@ -3,7 +3,7 @@ from collections import OrderedDict
 
 from ...utils.misc import master_only
 from ..registry import HOOKS
-from .logger import BaseLoggerHook
+from .base import BaseLoggerHook
 from .utils import get_lr
 
 

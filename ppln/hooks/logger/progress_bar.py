@@ -5,7 +5,7 @@ from colorama import Fore, Style
 from ...utils.misc import master_only
 from ...utils.progress_bar import ProgressBar
 from ..registry import HOOKS
-from .logger import BaseLoggerHook
+from .base import BaseLoggerHook
 from .utils import get_lr
 
 
