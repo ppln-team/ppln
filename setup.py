@@ -30,11 +30,11 @@ setup(
     author_email='amirassov@gmail.com',
     description='PyTorch runner',
     long_description_content_type='text/markdown',
-    url='https://github.com/amirassov/ppln',
+    url='https://github.com/ppln-team/ppln',
     packages=find_packages(),
     install_requires=[
         'torchvision', 'torch>=1.1', 'tqdm', 'PyYAML', 'colorama', 'addict', 'jpeg4py', 'opencv-python',
-        'albumentations', 'tensorboard', 'mlflow>=1.4'
+        'albumentations', 'tensorboard'
     ],
     setup_requires=['pytest-runner'],
     python_requires='>=3.6.0'
