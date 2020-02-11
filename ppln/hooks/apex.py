@@ -10,8 +10,8 @@ try:
     from apex import amp
 except ImportError as e:
     warnings.warn(
-        f"Error \"{e}\" during importing apex library. To use mixed precison"
-        ' you should install it from https://github.com/NVIDIA/apex'
+        f'Error "{e}" during importing apex library. To use mixed precison'
+        " you should install it from https://github.com/NVIDIA/apex"
     )
 
 
@@ -20,7 +20,7 @@ class ApexOptimizerHook(OptimizerHook):
     def after_train_iter(self, runner):
         runner.optimizers[self.name].zero_grad()
 
-        with amp.scale_loss(runner.outputs[f'{self.name}_loss'], runner.optimizers[self.name]) as scaled_loss:
+        with amp.scale_loss(runner.outputs[f"{self.name}_loss"], runner.optimizers[self.name]) as scaled_loss:
             scaled_loss.backward()
 
         if self.is_clip:

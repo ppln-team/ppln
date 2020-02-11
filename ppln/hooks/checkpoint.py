@@ -35,7 +35,7 @@ class CheckpointHook(BaseHook):
 
     @staticmethod
     def current_filename(runner):
-        return f'epoch_{runner.epoch + 1}.pth'
+        return f"epoch_{runner.epoch + 1}.pth"
 
     def current_filepath(self, runner):
         return osp.join(self.out_dir, self.current_filename(runner))
@@ -44,7 +44,7 @@ class CheckpointHook(BaseHook):
     def after_val_epoch(self, runner):
         metric = runner.log_buffer.output[self.metric_name]
 
-        if self.mode == 'min':
+        if self.mode == "min":
             metric *= -1
 
         if self._is_update(metric):
@@ -54,15 +54,15 @@ class CheckpointHook(BaseHook):
             self._best_metric = metric
             self._save_link(runner)
             runner.logger.info(
-                f'Best checkpoint was changed: {self.current_filename(runner)} with {self._best_metric}'
+                f"Best checkpoint was changed: {self.current_filename(runner)} with {self._best_metric}"
             )
 
     @master_only
     def after_run(self, runner):
-        runner.logger.info(f'Best checkpoints:')
+        runner.logger.info(f"Best checkpoints:")
         while not self._checkpoints.empty():
             metric, filename = self._checkpoints.get()
-            runner.logger.info(f'{filename}: {metric}')
+            runner.logger.info(f"{filename}: {metric}")
 
     def _is_update(self, metric):
         if not self._checkpoints.full():
@@ -78,7 +78,7 @@ class CheckpointHook(BaseHook):
         return False
 
     def _save_link(self, runner):
-        linkpath = osp.join(self.out_dir, 'best.pth')
+        linkpath = osp.join(self.out_dir, "best.pth")
         if os.path.lexists(linkpath):
             os.remove(linkpath)
         os.symlink(self.current_filename(runner), linkpath)

@@ -1,11 +1,11 @@
 from .handlers import BaseFileHandler, JsonHandler, PickleHandler, YamlHandler
 
 file_handlers = {
-    'json': JsonHandler(),
-    'yaml': YamlHandler(),
-    'yml': YamlHandler(),
-    'pickle': PickleHandler(),
-    'pkl': PickleHandler()
+    "json": JsonHandler(),
+    "yaml": YamlHandler(),
+    "yml": YamlHandler(),
+    "pickle": PickleHandler(),
+    "pkl": PickleHandler(),
 }
 
 
@@ -25,15 +25,15 @@ def load(file, file_format=None, **kwargs):
         The content from the file.
     """
     if file_format is None and isinstance(file, str):
-        file_format = file.split('.')[-1]
+        file_format = file.split(".")[-1]
     if file_format not in file_handlers:
-        raise TypeError('Unsupported format: {}'.format(file_format))
+        raise TypeError("Unsupported format: {}".format(file_format))
 
     handler = file_handlers[file_format]
     if isinstance(file, str):
         obj = handler.load_from_path(file, **kwargs)
-    elif hasattr(file, 'read'):
-        obj = handler.load_from_fileobj(file, )
+    elif hasattr(file, "read"):
+        obj = handler.load_from_fileobj(file)
     else:
         raise TypeError('"file" must be a filepath str or a file-object')
     return obj
@@ -57,18 +57,18 @@ def dump(obj, file=None, file_format=None, **kwargs):
     """
     if file_format is None:
         if isinstance(file, str):
-            file_format = file.split('.')[-1]
+            file_format = file.split(".")[-1]
         elif file is None:
-            raise ValueError('file_format must be specified since file is None')
+            raise ValueError("file_format must be specified since file is None")
     if file_format not in file_handlers:
-        raise TypeError('Unsupported format: {}'.format(file_format))
+        raise TypeError("Unsupported format: {}".format(file_format))
 
     handler = file_handlers[file_format]
     if file is None:
         return handler.dump_to_str(obj, **kwargs)
     elif isinstance(file, str):
         handler.dump_to_path(obj, file, **kwargs)
-    elif hasattr(file, 'write'):
+    elif hasattr(file, "write"):
         handler.dump_to_fileobj(obj, file, **kwargs)
     else:
         raise TypeError('"file" must be a filename str or a file-object')
@@ -83,7 +83,7 @@ def _register_handler(handler, file_formats):
             handler.
     """
     if not isinstance(handler, BaseFileHandler):
-        raise TypeError('handler must be a child of BaseFileHandler, not {}'.format(type(handler)))
+        raise TypeError("handler must be a child of BaseFileHandler, not {}".format(type(handler)))
     if isinstance(file_formats, str):
         file_formats = [file_formats]
     for ext in file_formats:

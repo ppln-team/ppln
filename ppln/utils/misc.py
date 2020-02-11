@@ -11,13 +11,13 @@ import torch.multiprocessing as mp
 
 
 def get_host_info():
-    return '{}@{}'.format(getuser(), gethostname())
+    return "{}@{}".format(getuser(), gethostname())
 
 
-def init_dist(backend='nccl', **kwargs):
+def init_dist(backend="nccl", **kwargs):
     if mp.get_start_method(allow_none=True) is None:
-        mp.set_start_method('spawn')
-    rank = int(os.environ['RANK'])
+        mp.set_start_method("spawn")
+    rank = int(os.environ["RANK"])
     num_gpus = torch.cuda.device_count()
     torch.cuda.set_device(rank % num_gpus)
     torch.distributed.init_process_group(backend=backend, **kwargs)
@@ -45,20 +45,20 @@ def master_only(func):
 
 
 def get_timestamp():
-    return time.strftime('%Y%m%d_%H%M%S', time.localtime())
+    return time.strftime("%Y%m%d_%H%M%S", time.localtime())
 
 
 def object_from_dict(d, parent=None, **default_kwargs):
-    assert isinstance(d, dict) and 'type' in d
+    assert isinstance(d, dict) and "type" in d
     kwargs = d.copy()
-    object_type = kwargs.pop('type')
+    object_type = kwargs.pop("type")
 
     for name, value in default_kwargs.items():
         kwargs.setdefault(name, value)
 
     # support nested constructions
     for key, value in kwargs.items():
-        if isinstance(value, dict) and 'type' in value:
+        if isinstance(value, dict) and "type" in value:
             value = object_from_dict(value)
             kwargs[key] = value
 
@@ -73,6 +73,7 @@ class cached_property(object):
         itself with an ordinary attribute. Deleting the attribute resets the
         property.
     """
+
     def __init__(self, func):
         functools.update_wrapper(wrapper=self, wrapped=func)
         self.func = func

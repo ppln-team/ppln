@@ -6,7 +6,7 @@ from .registry import HOOKS
 
 @HOOKS.register_module
 class LRSchedulerHook(BaseHook):
-    def __init__(self, name='base', metric_name='base_loss', by_epoch=True):
+    def __init__(self, name="base", metric_name="base_loss", by_epoch=True):
         self.name = name
         self.metric_name = metric_name
         self.by_epoch = by_epoch

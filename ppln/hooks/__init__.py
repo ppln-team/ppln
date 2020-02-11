@@ -14,8 +14,26 @@ from .sampler import DistSamplerSeedHook
 from .timer import IterTimerHook
 
 __all__ = [
-    'CheckpointHook', 'DistSamplerSeedHook', 'BaseHook', 'LogBufferHook', 'ProgressBarLoggerHook', 'TextLoggerHook',
-    'LRSchedulerHook', 'OptimizerHook', 'Priority', 'IterTimerHook', 'ApexOptimizerHook', 'ApexInitializeHook',
-    'ApexDDPHook', 'PytorchDDPHook', 'BaseDistClosureHook', 'BaseClosureHook', 'HOOKS', 'ApexSyncBNHook',
-    'PytorchSyncBNHook', 'EarlyStoppingHook', 'ResumeHook', 'BaseLoggerHook'
+    "CheckpointHook",
+    "DistSamplerSeedHook",
+    "BaseHook",
+    "LogBufferHook",
+    "ProgressBarLoggerHook",
+    "TextLoggerHook",
+    "LRSchedulerHook",
+    "OptimizerHook",
+    "Priority",
+    "IterTimerHook",
+    "ApexOptimizerHook",
+    "ApexInitializeHook",
+    "ApexDDPHook",
+    "PytorchDDPHook",
+    "BaseDistClosureHook",
+    "BaseClosureHook",
+    "HOOKS",
+    "ApexSyncBNHook",
+    "PytorchSyncBNHook",
+    "EarlyStoppingHook",
+    "ResumeHook",
+    "BaseLoggerHook",
 ]

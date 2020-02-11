@@ -46,15 +46,15 @@ class BaseExperiment:
             batch_size=self.cfg.data.images_per_gpu,
             num_workers=self.cfg.data.workers_per_gpu,
             pin_memory=self.cfg.data.pin_memory,
-            drop_last=mode == 'train'
+            drop_last=mode == "train",
         )
 
     @property
     def hooks(self):
-        hooks = self.cfg['hooks']
+        hooks = self.cfg["hooks"]
         if dist.is_initialized():
             hooks.append(DistSamplerSeedHook())
-        return self.cfg['hooks'] + [IterTimerHook(), LogBufferHook()]
+        return self.cfg["hooks"] + [IterTimerHook(), LogBufferHook()]
 
     @property
     def work_dir(self):

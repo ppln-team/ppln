@@ -1,7 +1,7 @@
 import torch
 
 
-def accuracy(output, target, topk=(1, )):
+def accuracy(output, target, topk=(1,)):
     """Computes the precision@k for the specified values of k"""
     with torch.no_grad():
         maxk = max(topk)
@@ -14,5 +14,5 @@ def accuracy(output, target, topk=(1, )):
         res = {}
         for k in topk:
             correct_k = correct[:k].view(-1).float().sum(0, keepdim=True)
-            res[f'acc_top{k}'] = correct_k.mul_(100.0 / batch_size).item()
+            res[f"acc_top{k}"] = correct_k.mul_(100.0 / batch_size).item()
         return res

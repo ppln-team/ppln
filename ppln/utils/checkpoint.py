@@ -37,23 +37,23 @@ def load_state_dict(module, state_dict, strict=False):
             own_state[name].copy_(param)
         except Exception:
             raise RuntimeError(
-                'While copying the parameter named {}, '
-                'whose dimensions in the model are {} and '
-                'whose dimensions in the checkpoint are {}.'.format(name, own_state[name].size(), param.size())
+                "While copying the parameter named {}, "
+                "whose dimensions in the model are {} and "
+                "whose dimensions in the checkpoint are {}.".format(name, own_state[name].size(), param.size())
             )
 
     missing_keys = set(own_state.keys()) - set(state_dict.keys())
 
     err_msg = []
     if unexpected_keys:
-        err_msg.append('unexpected key in source state_dict: {}\n'.format(', '.join(unexpected_keys)))
+        err_msg.append("unexpected key in source state_dict: {}\n".format(", ".join(unexpected_keys)))
     if missing_keys:
-        err_msg.append('missing keys in source state_dict: {}\n'.format(', '.join(missing_keys)))
+        err_msg.append("missing keys in source state_dict: {}\n".format(", ".join(missing_keys)))
 
     rank, _ = get_dist_info()
     if err_msg and rank == 0:
-        err_msg.insert(0, 'The model and loaded state dict do not match exactly\n')
-        err_msg = '\n'.join(err_msg)
+        err_msg.insert(0, "The model and loaded state dict do not match exactly\n")
+        err_msg = "\n".join(err_msg)
         if strict:
             raise RuntimeError(err_msg)
         else:
@@ -75,25 +75,25 @@ def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=
     # get state_dict from checkpoint
     if isinstance(checkpoint, OrderedDict):
         state_dict = checkpoint
-    elif isinstance(checkpoint, dict) and 'state_dict' in checkpoint:
-        state_dict = checkpoint['state_dict']
+    elif isinstance(checkpoint, dict) and "state_dict" in checkpoint:
+        state_dict = checkpoint["state_dict"]
     else:
-        raise RuntimeError('No state_dict found in checkpoint file {}'.format(filename))
+        raise RuntimeError("No state_dict found in checkpoint file {}".format(filename))
 
     # strip prefix of state_dict
-    if list(state_dict.keys())[0].startswith('module.'):
-        state_dict = {k[7:]: v for k, v in checkpoint['state_dict'].items()}
+    if list(state_dict.keys())[0].startswith("module."):
+        state_dict = {k[7:]: v for k, v in checkpoint["state_dict"].items()}
 
         # load state_dict
-    if hasattr(model, 'module'):
+    if hasattr(model, "module"):
         load_state_dict(model.module, state_dict, strict)
     else:
         load_state_dict(model, state_dict, strict)
 
-    if 'optimizer' in checkpoint and optimizer is not None:
-        load_optim_state_dict(optimizer, checkpoint['optimizer'], Optimizer)
-    if 'scheduler' in checkpoint and scheduler is not None:
-        load_optim_state_dict(scheduler, checkpoint['scheduler'], _LRScheduler)
+    if "optimizer" in checkpoint and optimizer is not None:
+        load_optim_state_dict(optimizer, checkpoint["optimizer"], Optimizer)
+    if "scheduler" in checkpoint and scheduler is not None:
+        load_optim_state_dict(scheduler, checkpoint["scheduler"], _LRScheduler)
 
     return checkpoint
 
@@ -132,19 +132,16 @@ def save_checkpoint(model, filename, optimizer=None, scheduler=None, meta=None):
     if meta is None:
         meta = {}
     elif not isinstance(meta, dict):
-        raise TypeError('meta must be a dict or None, but got {}'.format(type(meta)))
+        raise TypeError("meta must be a dict or None, but got {}".format(type(meta)))
     meta.update(ppln_version=__version__, time=time.asctime())
 
     os.makedirs(osp.dirname(filename), exist_ok=True)
-    if hasattr(model, 'module'):
+    if hasattr(model, "module"):
         model = model.module
 
-    checkpoint = {
-        'meta': meta,
-        'state_dict': weights_to_cpu(model.state_dict()),
-    }
+    checkpoint = {"meta": meta, "state_dict": weights_to_cpu(model.state_dict())}
     if optimizer is not None:
-        checkpoint['optimizer'] = make_optim_state_dict(optimizer, Optimizer)
+        checkpoint["optimizer"] = make_optim_state_dict(optimizer, Optimizer)
     if scheduler is not None:
-        checkpoint['scheduler'] = make_optim_state_dict(scheduler, _LRScheduler)
+        checkpoint["scheduler"] = make_optim_state_dict(scheduler, _LRScheduler)
     torch.save(checkpoint, filename)

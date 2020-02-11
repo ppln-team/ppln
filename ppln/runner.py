@@ -22,7 +22,7 @@ class Runner(HookList):
         batch_processor: BaseBatchProcessor,
         hooks: List[Union[Dict, BaseHook]],
         work_dir: str,
-        logger: Optional[Logger] = None
+        logger: Optional[Logger] = None,
     ):
         super().__init__(hooks)
         self.work_dir = self.init_work_dir(work_dir)
@@ -47,13 +47,13 @@ class Runner(HookList):
     @staticmethod
     def init_optimizers(optimizers):
         if isinstance(optimizers, Optimizer):
-            optimizers = {'base': optimizers}
+            optimizers = {"base": optimizers}
         return optimizers
 
     @staticmethod
     def init_schedulers(schedulers):
         if isinstance(schedulers, (_LRScheduler, ReduceLROnPlateau)):
-            schedulers = {'base': schedulers}
+            schedulers = {"base": schedulers}
         return schedulers
 
     @staticmethod
@@ -68,19 +68,19 @@ class Runner(HookList):
 
     @property
     def train_mode(self) -> bool:
-        return self.mode == 'train'
+        return self.mode == "train"
 
     def run(self, data_loaders, max_epochs, **kwargs):
         """Start running"""
         self.max_epochs = max_epochs
 
-        self.call('before_run')
+        self.call("before_run")
         for self.epoch in range(self.epoch, max_epochs):
             for self.mode, self.data_loader in data_loaders.items():
                 self.run_mode(**kwargs)
             if self.stop_training:
                 break
-        self.call('after_run')
+        self.call("after_run")
 
     def run_mode(self, **kwargs):
         self.model.train(self.train_mode)
@@ -88,17 +88,17 @@ class Runner(HookList):
         if self.train_mode:
             self.max_iters = self.max_epochs * len(self.data_loader)
 
-        self.call(f'before_{self.mode}_epoch')
+        self.call(f"before_{self.mode}_epoch")
         for self.inner_iter, batch in enumerate(self.data_loader):
             self.run_batch(batch, **kwargs)
-        self.call(f'after_{self.mode}_epoch')
+        self.call(f"after_{self.mode}_epoch")
 
     def run_batch(self, batch, **kwargs):
-        self.call(f'before_{self.mode}_iter')
+        self.call(f"before_{self.mode}_iter")
         with torch.set_grad_enabled(self.train_mode):
-            self.outputs = getattr(self.batch_processor, f'{self.mode}_step')(self.model, batch, **kwargs)
-            self.log_buffer.update(self.outputs['values'], self.outputs['num_samples'])
-        self.call(f'after_{self.mode}_iter')
+            self.outputs = getattr(self.batch_processor, f"{self.mode}_step")(self.model, batch, **kwargs)
+            self.log_buffer.update(self.outputs["values"], self.outputs["num_samples"])
+        self.call(f"after_{self.mode}_iter")
 
         if self.train_mode:
             self.iter += 1

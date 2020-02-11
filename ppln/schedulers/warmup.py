@@ -6,6 +6,7 @@ class WarmupLR(LambdaLR):
     Create a schedule with a constant learning rate preceded by a warmup
     period during which the learning rate increases linearly between 0 and 1.
     """
+
     def __init__(self, optimizer, warmup_steps, last_epoch=-1):
         self.warmup_steps = warmup_steps
         super().__init__(optimizer, self.lr_lambda, last_epoch=last_epoch)

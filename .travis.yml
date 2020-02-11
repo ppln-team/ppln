@@ -3,10 +3,10 @@ python:
   - "3.6"
 install:
   - python setup.py sdist
-  - pip install flake8 yapf isort
+  - pip install flake8 black==19.3b0 isort
 before_script:
   - flake8
-  - isort -rc --diff ppln/ tests/ examples/
-  - yapf -r -d ppln/ tests/ examples/
+  - isort -rc --diff .
+  - black --config=black.toml --check .
 script:
   - python setup.py test

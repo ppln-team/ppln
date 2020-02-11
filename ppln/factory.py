@@ -14,8 +14,8 @@ try:
     from apex.parallel import DistributedDataParallel as ApexDDP
 except ImportError as e:
     warnings.warn(
-        f"Error \"{e}\" during importing apex library. To use mixed precison"
-        ' you should install it from https://github.com/NVIDIA/apex'
+        f'Error "{e}" during importing apex library. To use mixed precison'
+        " you should install it from https://github.com/NVIDIA/apex"
     )
 
 
@@ -49,21 +49,21 @@ def make_scheduler(optimizer: Optimizer, config: dict) -> _LRScheduler:
     return object_from_dict(config, optimizer=optimizer)
 
 
-def make_file_handler(logger, filename=None, mode='w', level=logging.INFO):
+def make_file_handler(logger, filename=None, mode="w", level=logging.INFO):
     file_handler = logging.FileHandler(filename, mode)
-    file_handler.setFormatter(logging.Formatter('%(asctime)s - %(levelname)s - %(message)s'))
+    file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
     file_handler.setLevel(level)
     logger.addHandler(file_handler)
     return logger
 
 
 def make_logger(log_dir):
-    logging.basicConfig(format='%(asctime)s - %(levelname)s - %(message)s', level=logging.INFO)
+    logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
     rank, _ = get_dist_info()
     timestamp = get_timestamp()
     logger = logging.getLogger(__name__)
     logger.setLevel(logging.INFO)
     if log_dir and rank == 0:
-        log_file = osp.join(log_dir, f'{timestamp}.log')
+        log_file = osp.join(log_dir, f"{timestamp}.log")
         make_file_handler(logger, log_file, level=logging.INFO)
     return logger

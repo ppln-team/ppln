@@ -6,7 +6,7 @@ import torch
 from torch.utils.data import Dataset
 from torchvision.datasets import DatasetFolder
 
-IMG_EXTENSIONS = ('.jpg', '.jpeg', '.png')
+IMG_EXTENSIONS = (".jpg", ".jpeg", ".png")
 
 
 def jpeg_loader(path):
@@ -31,14 +31,14 @@ class MultiLabelDataset(Dataset):
 
     def __getitem__(self, index):
         sample = self.samples[index]
-        result = {'image': self.loader(osp.join(self.root, sample['name'])), 'name': sample['name']}
+        result = {"image": self.loader(osp.join(self.root, sample["name"])), "name": sample["name"]}
 
-        if 'classes' in sample:
-            targets = sample['classes']
+        if "classes" in sample:
+            targets = sample["classes"]
             if self.target_transform is not None:
                 targets = [self.target_transform(target) for target in targets]
                 targets = torch.tensor([float(cls in targets) for cls in range(self.num_classes)])
-            result['targets'] = targets
+            result["targets"] = targets
         if self.transform is not None:
             result = self.transform(**result)
         return result
@@ -47,20 +47,16 @@ class MultiLabelDataset(Dataset):
 class ClassFolderDataset(DatasetFolder):
     def __init__(self, root, transform=None, target_transform=None, loader=jpeg_loader):
         super(ClassFolderDataset, self).__init__(
-            root,
-            loader,
-            IMG_EXTENSIONS,
-            transform=transform,
-            target_transform=target_transform,
+            root, loader, IMG_EXTENSIONS, transform=transform, target_transform=target_transform
         )
 
     def __getitem__(self, index):
         path, idx = self.samples[index]
         cls = self.classes[idx]
         image = self.loader(path)
-        sample = {'image': image, 'class': cls, 'name': osp.basename(path)}
+        sample = {"image": image, "class": cls, "name": osp.basename(path)}
         if self.target_transform is not None:
-            sample['target'] = self.target_transform(cls)
+            sample["target"] = self.target_transform(cls)
         if self.transform is not None:
             sample = self.transform(**sample)
         return sample

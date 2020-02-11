@@ -8,16 +8,16 @@ from .registry import HOOKS
 
 @HOOKS.register_module
 class EarlyStoppingHook(BaseHook):
-    def __init__(self, metric_name='base_loss', patience=0, verbose=0, mode='min'):
+    def __init__(self, metric_name="base_loss", patience=0, verbose=0, mode="min"):
         super().__init__()
 
         self.metric_name = metric_name
         self.patience = patience
         self.verbose = verbose
 
-        if mode == 'min':
+        if mode == "min":
             self._is_update = np.less
-        elif mode == 'max':
+        elif mode == "max":
             self._is_update = np.greater
 
         self._wait = 0
@@ -43,4 +43,4 @@ class EarlyStoppingHook(BaseHook):
     @master_only
     def after_run(self, runner):
         if self._stopped_epoch > 0 and self.verbose > 0:
-            runner.logger.info(f'Epoch {self._stopped_epoch + 1}: early stopping')
+            runner.logger.info(f"Epoch {self._stopped_epoch + 1}: early stopping")

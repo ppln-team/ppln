@@ -1,4 +1,4 @@
-def list_from_file(filename, prefix='', offset=0, max_num=0):
+def list_from_file(filename, prefix="", offset=0, max_num=0):
     """Load a text file and parse the content as a list of strings.
 
     Args:
@@ -13,13 +13,13 @@ def list_from_file(filename, prefix='', offset=0, max_num=0):
     """
     cnt = 0
     item_list = []
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         for _ in range(offset):
             f.readline()
         for line in f:
             if max_num > 0 and cnt >= max_num:
                 break
-            item_list.append(prefix + line.rstrip('\n'))
+            item_list.append(prefix + line.rstrip("\n"))
             cnt += 1
     return item_list
 
@@ -40,9 +40,9 @@ def dict_from_file(filename, key_type=str):
         dict: The parsed contents.
     """
     mapping = {}
-    with open(filename, 'r') as f:
+    with open(filename, "r") as f:
         for line in f:
-            items = line.rstrip('\n').split()
+            items = line.rstrip("\n").split()
             assert len(items) >= 2
             key = key_type(items[0])
             val = items[1:] if len(items) > 2 else items[1]
