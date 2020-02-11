@@ -13,7 +13,7 @@ class ResumeHook(BaseHook):
         resume_scheduler=True,
         resume_iter=True,
         strict=False,
-        map_location='cpu'
+        map_location="cpu",
     ):
         self.checkpoint = checkpoint
         self.resume_optimizer = resume_optimizer
@@ -27,17 +27,17 @@ class ResumeHook(BaseHook):
         return Priority.HIGHEST
 
     def before_run(self, runner):
-        runner.logger.info(f'resume from {self.checkpoint}')
+        runner.logger.info(f"resume from {self.checkpoint}")
         checkpoint = load_checkpoint(
             runner.model,
             self.checkpoint,
             map_location=self.map_location,
             strict=self.strict,
             optimizer=runner.optimizers if self.resume_optimizer else None,
-            scheduler=runner.schedulers if self.resume_scheduler else None
+            scheduler=runner.schedulers if self.resume_scheduler else None,
         )
 
         if self.resume_iter:
-            runner.epoch = checkpoint['meta']['epoch']
-            runner.iter = checkpoint['meta']['iter']
-            runner.logger.info(f'resumed epoch: {runner.epoch}, iter: {runner.iter}')
+            runner.epoch = checkpoint["meta"]["epoch"]
+            runner.iter = checkpoint["meta"]["iter"]
+            runner.logger.info(f"resumed epoch: {runner.epoch}, iter: {runner.iter}")

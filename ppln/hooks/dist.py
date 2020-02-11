@@ -11,8 +11,8 @@ try:
     from apex.parallel import convert_syncbn_model as apex_convert_sync_batchnorm
 except ImportError as e:
     warnings.warn(
-        f"Error \"{e}\" during importing apex library. To use mixed precison"
-        ' you should install it from https://github.com/NVIDIA/apex'
+        f'Error "{e}" during importing apex library. To use mixed precison'
+        " you should install it from https://github.com/NVIDIA/apex"
     )
 
 

@@ -21,7 +21,7 @@ class ProgressBarLoggerHook(BaseLoggerHook):
 
     @master_only
     def after_epoch(self, runner):
-        sys.stdout.write(f'\n')
+        sys.stdout.write(f"\n")
 
     def after_iter(self, runner):
         self.log(runner)
@@ -31,13 +31,13 @@ class ProgressBarLoggerHook(BaseLoggerHook):
         epoch_color = Fore.YELLOW
         mode_color = (Fore.RED, Fore.BLUE)[runner.train_mode]
         text_color = (Fore.CYAN, Fore.GREEN)[runner.train_mode]
-        epoch_text = f'{epoch_color}epoch:{Style.RESET_ALL} {runner.epoch + 1:<4}'
-        log_items = [(' ' * 11, epoch_text)[runner.train_mode], f'{mode_color}{runner.mode:<5}{Style.RESET_ALL}']
+        epoch_text = f"{epoch_color}epoch:{Style.RESET_ALL} {runner.epoch + 1:<4}"
+        log_items = [(" " * 11, epoch_text)[runner.train_mode], f"{mode_color}{runner.mode:<5}{Style.RESET_ALL}"]
         for name, lrs in get_lr(runner.optimizers).items():
             log_items.append(f'{text_color}{name}_lr:{Style.RESET_ALL} {", ".join([f"{lr:.3e}" for lr in lrs])}')
 
         for name, value in runner.log_buffer.output.items():
             if isinstance(value, float):
-                value = f'{value:.4f}'
-            log_items.append(f'{text_color}{name}:{Style.RESET_ALL} {value}')
+                value = f"{value:.4f}"
+            log_items.append(f"{text_color}{name}:{Style.RESET_ALL} {value}")
         self.bar.update(f"{' | '.join(log_items)}")

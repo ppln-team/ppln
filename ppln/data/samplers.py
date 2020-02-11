@@ -9,11 +9,11 @@ class WeightedRandomDistributedSampler(Sampler):
     def __init__(self, dataset, weights, num_samples, replacement=True, num_replicas=None, rank=None):
         if num_replicas is None:
             if not dist.is_available():
-                raise RuntimeError('Requires distributed package to be available')
+                raise RuntimeError("Requires distributed package to be available")
             num_replicas = dist.get_world_size()
         if rank is None:
             if not dist.is_available():
-                raise RuntimeError('Requires distributed package to be available')
+                raise RuntimeError("Requires distributed package to be available")
             rank = dist.get_rank()
         self.dataset = dataset
         self.weights = weights
@@ -32,7 +32,7 @@ class WeightedRandomDistributedSampler(Sampler):
         assert len(indices) == self.total_size
 
         # subsample
-        indices = indices[self.rank:self.total_size:self.num_replicas]
+        indices = indices[self.rank : self.total_size : self.num_replicas]
         assert len(indices) == self.num_samples
 
         return iter(indices)
