@@ -73,6 +73,7 @@ class cached_property(object):
         itself with an ordinary attribute. Deleting the attribute resets the
         property.
     """
+
     def __init__(self, func):
         functools.update_wrapper(wrapper=self, wrapped=func)
         self.func = func

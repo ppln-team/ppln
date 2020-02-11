@@ -9,6 +9,7 @@ class TimerError(Exception):
 
 class Timer(object):
     """A flexible Timer class"""
+
     def __init__(self, start=True, print_tmpl=None):
         self._is_running = False
         self._t_last = None

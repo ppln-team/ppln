@@ -6,7 +6,7 @@ install:
   - pip install flake8 yapf isort
 before_script:
   - flake8
-  - isort -rc --diff ppln/ tests/ examples/
-  - yapf -r -d ppln/ tests/ examples/
+  - isort -rc --diff .
+  - yapf -r -d .
 script:
   - python setup.py test

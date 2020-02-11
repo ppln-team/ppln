@@ -12,6 +12,7 @@ def make_albumentations(transforms):
     Args:
         transforms (list): list of transformations to compose.
     """
+
     def build(config):
         if 'transforms' in config:
             config['transforms'] = [build(transform) for transform in config['transforms']]
