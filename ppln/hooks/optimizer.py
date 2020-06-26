@@ -1,25 +1,25 @@
-from torch.nn.utils import clip_grad
+from torch.nn.utils.clip_grad import clip_grad_norm_
 
-from .base import BaseClosureHook
+from .base import BaseHook
 from .priority import Priority
 from .registry import HOOKS
 
 
 @HOOKS.register_module
-class OptimizerHook(BaseClosureHook):
+class OptimizerHook(BaseHook):
     @property
     def priority(self):
         return Priority.HIGH
 
-    def __init__(self, name="base", **kwargs):
-        super().__init__(clip_grad.clip_grad_norm_, **kwargs)
-        self.name = name
-        self.is_clip = len(kwargs) > 0
+    def __init__(self, max_norm=None, norm_type=2):
+        super().__init__()
+        self.max_norm = max_norm
+        self.norm_type = norm_type
 
     def after_train_iter(self, runner):
-        runner.optimizers[self.name].zero_grad()
-        runner.outputs[f"{self.name}_loss"].backward()
-        if self.is_clip:
-            for param_group in runner.optimizers[self.name].param_groups:
-                self.func(param_group["params"])
-        runner.optimizers[self.name].step()
+        runner.optimizer.zero_grad()
+        runner.batch_processor_output["loss"].backward()
+        if isinstance(self.max_norm, float):
+            for param_group in runner.optimizer.param_groups:
+                clip_grad_norm_(param_group["params"], max_norm=self.max_norm, norm_type=self.norm_type)
+        runner.optimizer.step()

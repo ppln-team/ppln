@@ -85,9 +85,10 @@ class CheckpointHook(BaseHook):
 
     def _save_checkpoint(self, runner):
         self.meta.update(epoch=runner.epoch + 1, iter=runner.iter)
-
-        optimizers = runner.optimizers if self.save_optimizer else None
-        schedulers = runner.schedulers if self.save_scheduler else None
         save_checkpoint(
-            runner.model, self.current_filepath(runner), optimizer=optimizers, scheduler=schedulers, meta=self.meta
+            model=runner.model,
+            filename=self.current_filepath(runner),
+            optimizer=runner.optimizer if self.save_optimizer else None,
+            scheduler=runner.scheduler if self.save_scheduler else None,
+            meta=self.meta,
         )

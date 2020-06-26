@@ -19,9 +19,7 @@ class TextLoggerHook(BaseLoggerHook):
 
     def _log_info(self, log_dict, runner):
         if runner.mode == "train":
-            lr_str = "".join(
-                [f"{name}_lr: {', '.join([f'{lr:.3e}' for lr in lrs])}, " for name, lrs in log_dict["lr"].items()]
-            )
+            lr_str = f"lr: {', '.join([f'{lr:.3e}' for lr in log_dict['lr']])}, "
             log_str = f'Epoch [{log_dict["epoch"]}][{log_dict["iter"]}/{len(runner.data_loader)}]\t{lr_str}'
             if "time" in log_dict.keys():
                 self.time_sec_tot += log_dict["time"] * len(runner.data_loader)
@@ -51,13 +49,8 @@ class TextLoggerHook(BaseLoggerHook):
         log_dict["mode"] = mode
         log_dict["epoch"] = runner.epoch + 1
         log_dict["iter"] = runner.inner_iter + 1
-        log_dict["lr"] = get_lr(runner.optimizers)
-        if mode == "train":
-            log_dict["time"] = runner.log_buffer.output["time"]
-            log_dict["data_time"] = runner.log_buffer.output["data_time"]
+        log_dict["lr"] = get_lr(runner.optimizer)
         for name, val in runner.log_buffer.output.items():
-            if name in ["time", "data_time"]:
-                continue
             log_dict[name] = val
 
         self._log_info(log_dict, runner)

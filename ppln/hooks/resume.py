@@ -29,12 +29,12 @@ class ResumeHook(BaseHook):
     def before_run(self, runner):
         runner.logger.info(f"resume from {self.checkpoint}")
         checkpoint = load_checkpoint(
-            runner.model,
-            self.checkpoint,
+            model=runner.model,
+            filename=self.checkpoint,
             map_location=self.map_location,
             strict=self.strict,
-            optimizer=runner.optimizers if self.resume_optimizer else None,
-            scheduler=runner.schedulers if self.resume_scheduler else None,
+            optimizer=runner.optimizer if self.resume_optimizer else None,
+            scheduler=runner.scheduler if self.resume_scheduler else None,
         )
 
         if self.resume_iter:

@@ -8,7 +8,7 @@ from .registry import HOOKS
 
 @HOOKS.register_module
 class EarlyStoppingHook(BaseHook):
-    def __init__(self, metric_name="base_loss", patience=0, verbose=0, mode="min"):
+    def __init__(self, metric_name="loss", patience=0, verbose=0, mode="min"):
         super().__init__()
 
         self.metric_name = metric_name

@@ -60,14 +60,6 @@ def load_state_dict(module, state_dict, strict=False):
             print(err_msg)
 
 
-def load_optim_state_dict(obj, state_dict, obj_type):
-    if isinstance(obj, dict):
-        for name in obj:
-            obj[name].load_state_dict(state_dict[name])
-    elif isinstance(obj, obj_type):
-        obj.load_state_dict(state_dict)
-
-
 def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=None, scheduler=None):
     """Load checkpoint from a file or URI."""
     checkpoint = torch.load(filename, map_location=map_location)
@@ -91,9 +83,9 @@ def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=
         load_state_dict(model, state_dict, strict)
 
     if "optimizer" in checkpoint and optimizer is not None:
-        load_optim_state_dict(optimizer, checkpoint["optimizer"], Optimizer)
+        optimizer.load_state_dict(checkpoint["optimizer"])
     if "scheduler" in checkpoint and scheduler is not None:
-        load_optim_state_dict(scheduler, checkpoint["scheduler"], _LRScheduler)
+        scheduler.load_state_dict(checkpoint["scheduler"])
 
     return checkpoint
 
@@ -109,13 +101,6 @@ def weights_to_cpu(state_dict):
     for key, val in state_dict.items():
         state_dict_cpu[key] = val.cpu()
     return state_dict_cpu
-
-
-def make_optim_state_dict(data, data_type):
-    if isinstance(data, dict):
-        return {k: v.state_dict() for k, v in data.items()}
-    elif isinstance(data, data_type):
-        return data.state_dict()
 
 
 def save_checkpoint(model, filename, optimizer=None, scheduler=None, meta=None):
@@ -141,7 +126,7 @@ def save_checkpoint(model, filename, optimizer=None, scheduler=None, meta=None):
 
     checkpoint = {"meta": meta, "state_dict": weights_to_cpu(model.state_dict())}
     if optimizer is not None:
-        checkpoint["optimizer"] = make_optim_state_dict(optimizer, Optimizer)
+        checkpoint["optimizer"] = optimizer.state_dict()
     if scheduler is not None:
-        checkpoint["scheduler"] = make_optim_state_dict(scheduler, _LRScheduler)
+        checkpoint["scheduler"] = scheduler.state_dict()
     torch.save(checkpoint, filename)
