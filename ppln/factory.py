@@ -7,7 +7,8 @@ from torch.nn.parallel import DistributedDataParallel as PytorchDDP
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
 
-from .utils.misc import get_dist_info, get_timestamp, object_from_dict
+from .utils.dist import get_dist_info
+from .utils.misc import get_timestamp, object_from_dict
 
 try:
     from apex import amp

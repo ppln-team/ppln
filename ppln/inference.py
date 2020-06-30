@@ -4,7 +4,7 @@ from collections import defaultdict
 import torch
 import torch.distributed as dist
 
-from ppln.utils.misc import get_dist_info
+from ppln.utils.dist import get_dist_info
 from ppln.utils.progress_bar import ProgressBar
 
 MAX_LEN = 512

@@ -17,7 +17,7 @@ except ImportError as e:
 
 
 @HOOKS.register_module
-class BaseDistClosureHook(BaseClosureHook):
+class ModelClosureHook(BaseClosureHook):
     @property
     def priority(self):
         return Priority.VERY_HIGH
@@ -27,24 +27,24 @@ class BaseDistClosureHook(BaseClosureHook):
 
 
 @HOOKS.register_module
-class PytorchDDPHook(BaseDistClosureHook):
+class PytorchDDPHook(ModelClosureHook):
     def __init__(self, **kwargs):
         super().__init__(make_pytorch_ddp, **kwargs)
 
 
 @HOOKS.register_module
-class ApexDDPHook(BaseDistClosureHook):
+class ApexDDPHook(ModelClosureHook):
     def __init__(self, **kwargs):
         super().__init__(make_apex_ddp, **kwargs)
 
 
 @HOOKS.register_module
-class ApexSyncBNHook(BaseDistClosureHook):
+class ApexSyncBNHook(ModelClosureHook):
     def __init__(self, **kwargs):
         super().__init__(apex_convert_sync_batchnorm, **kwargs)
 
 
 @HOOKS.register_module
-class PytorchSyncBNHook(BaseDistClosureHook):
+class PytorchSyncBNHook(ModelClosureHook):
     def __init__(self, **kwargs):
         super().__init__(SyncBatchNorm.convert_sync_batchnorm, **kwargs)

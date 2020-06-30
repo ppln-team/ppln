@@ -1,6 +1,5 @@
 from typing import Dict
 
-import torch.distributed as dist
 from torch import nn
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
@@ -8,7 +7,8 @@ from torch.utils.data import DataLoader
 
 from .data.transforms import make_albumentations
 from .factory import make_model
-from .hooks import DistSamplerSeedHook, IterTimerHook, LogBufferHook
+from .hooks import DistSamplerSeedHook, IterTimerHook
+from .utils.dist import is_dist_avail_and_initialized
 from .utils.misc import cached_property
 
 
@@ -17,11 +17,11 @@ class BaseExperiment:
         self.cfg = cfg
 
     @cached_property
-    def optimizers(self) -> Dict[str, Optimizer]:
+    def optimizer(self) -> Dict[str, Optimizer]:
         raise NotImplementedError
 
     @property
-    def schedulers(self) -> Dict[str, _LRScheduler]:
+    def scheduler(self) -> Dict[str, _LRScheduler]:
         raise NotImplementedError
 
     @cached_property
@@ -52,9 +52,9 @@ class BaseExperiment:
     @property
     def hooks(self):
         hooks = self.cfg["hooks"]
-        if dist.is_initialized():
+        if is_dist_avail_and_initialized():
             hooks.append(DistSamplerSeedHook())
-        return self.cfg["hooks"] + [IterTimerHook(), LogBufferHook()]
+        return self.cfg["hooks"] + [IterTimerHook()]
 
     @property
     def work_dir(self):

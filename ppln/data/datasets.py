@@ -37,7 +37,7 @@ class MultiLabelDataset(Dataset):
             targets = sample["classes"]
             if self.target_transform is not None:
                 targets = [self.target_transform(target) for target in targets]
-                targets = torch.tensor([float(cls in targets) for cls in range(self.num_classes)])
+            targets = torch.tensor([float(cls in targets) for cls in range(self.num_classes)])
             result["targets"] = targets
         if self.transform is not None:
             result = self.transform(**result)

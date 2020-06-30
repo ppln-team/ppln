@@ -2,7 +2,7 @@ import sys
 
 from colorama import Fore, Style
 
-from ...utils.misc import master_only
+from ...utils.dist import master_only
 from ...utils.progress_bar import ProgressBar
 from ..registry import HOOKS
 from .base import BaseLoggerHook
@@ -32,11 +32,12 @@ class ProgressBarLoggerHook(BaseLoggerHook):
         mode_color = (Fore.RED, Fore.BLUE)[runner.train_mode]
         text_color = (Fore.CYAN, Fore.GREEN)[runner.train_mode]
         epoch_text = f"{epoch_color}epoch:{Style.RESET_ALL} {runner.epoch + 1:<4}"
-        log_items = [(" " * 11, epoch_text)[runner.train_mode], f"{mode_color}{runner.mode:<5}{Style.RESET_ALL}"]
-        for name, lrs in get_lr(runner.optimizers).items():
-            log_items.append(f'{text_color}{name}_lr:{Style.RESET_ALL} {", ".join([f"{lr:.3e}" for lr in lrs])}')
-
-        for name, value in runner.log_buffer.output.items():
+        log_items = [
+            (" " * 11, epoch_text)[runner.train_mode],
+            f"{mode_color}{runner.mode:<5}{Style.RESET_ALL}",
+            f'{text_color}lr:{Style.RESET_ALL} {", ".join([f"{lr:.3e}" for lr in get_lr(runner.optimizer)])}',
+        ]
+        for name, value in runner.epoch_outputs.items():
             if isinstance(value, float):
                 value = f"{value:.4f}"
             log_items.append(f"{text_color}{name}:{Style.RESET_ALL} {value}")

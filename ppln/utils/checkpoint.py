@@ -4,14 +4,12 @@ import time
 from collections import OrderedDict
 
 import torch
-from torch.optim.lr_scheduler import _LRScheduler
-from torch.optim.optimizer import Optimizer
 
 from .. import __version__
-from .misc import get_dist_info
+from .dist import get_dist_info
 
 
-def load_state_dict(module, state_dict, strict=False):
+def load_state_dict(module, state_dict, strict=False, logger=None):
     """Load state_dict to a module.
     This method is modified from :meth:`torch.nn.Module.load_state_dict`.
     Default value for ``strict`` is set to ``False`` and the message for
@@ -22,50 +20,47 @@ def load_state_dict(module, state_dict, strict=False):
         strict (bool): whether to strictly enforce that the keys
             in :attr:`state_dict` match the keys returned by this module's
             :meth:`~torch.nn.Module.state_dict` function. Default: ``False``.
+        logger (:obj:`logging.Logger`, optional): Logger to log the error
+            message. If not specified, print function will be used.
     """
     unexpected_keys = []
-    own_state = module.state_dict()
-    for name, param in state_dict.items():
-        if name not in own_state:
-            unexpected_keys.append(name)
-            continue
-        if isinstance(param, torch.nn.Parameter):
-            # backwards compatibility for serialized parameters
-            param = param.data
-
-        try:
-            own_state[name].copy_(param)
-        except Exception:
-            raise RuntimeError(
-                "While copying the parameter named {}, "
-                "whose dimensions in the model are {} and "
-                "whose dimensions in the checkpoint are {}.".format(name, own_state[name].size(), param.size())
-            )
-
-    missing_keys = set(own_state.keys()) - set(state_dict.keys())
-
+    all_missing_keys = []
     err_msg = []
+
+    metadata = getattr(state_dict, "_metadata", None)
+    state_dict = state_dict.copy()
+    if metadata is not None:
+        state_dict._metadata = metadata
+
+    # use _load_from_state_dict to enable checkpoint version control
+    def load(m, prefix=""):
+        local_metadata = {} if metadata is None else metadata.get(prefix[:-1], {})
+        m._load_from_state_dict(state_dict, prefix, local_metadata, True, all_missing_keys, unexpected_keys, err_msg)
+        for name, child in m._modules.items():
+            if child is not None:
+                load(child, prefix + name + ".")
+
+    load(module)
+    load = None  # break load->load reference cycle
+
+    # ignore "num_batches_tracked" of BN layers
+    missing_keys = [key for key in all_missing_keys if "num_batches_tracked" not in key]
+
     if unexpected_keys:
-        err_msg.append("unexpected key in source state_dict: {}\n".format(", ".join(unexpected_keys)))
+        err_msg.append("unexpected key in source " f'state_dict: {", ".join(unexpected_keys)}\n')
     if missing_keys:
-        err_msg.append("missing keys in source state_dict: {}\n".format(", ".join(missing_keys)))
+        err_msg.append(f'missing keys in source state_dict: {", ".join(missing_keys)}\n')
 
     rank, _ = get_dist_info()
-    if err_msg and rank == 0:
+    if len(err_msg) > 0 and rank == 0:
         err_msg.insert(0, "The model and loaded state dict do not match exactly\n")
         err_msg = "\n".join(err_msg)
         if strict:
             raise RuntimeError(err_msg)
+        elif logger is not None:
+            logger.warning(err_msg)
         else:
             print(err_msg)
-
-
-def load_optim_state_dict(obj, state_dict, obj_type):
-    if isinstance(obj, dict):
-        for name in obj:
-            obj[name].load_state_dict(state_dict[name])
-    elif isinstance(obj, obj_type):
-        obj.load_state_dict(state_dict)
 
 
 def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=None, scheduler=None):
@@ -91,9 +86,9 @@ def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=
         load_state_dict(model, state_dict, strict)
 
     if "optimizer" in checkpoint and optimizer is not None:
-        load_optim_state_dict(optimizer, checkpoint["optimizer"], Optimizer)
+        optimizer.load_state_dict(checkpoint["optimizer"])
     if "scheduler" in checkpoint and scheduler is not None:
-        load_optim_state_dict(scheduler, checkpoint["scheduler"], _LRScheduler)
+        scheduler.load_state_dict(checkpoint["scheduler"])
 
     return checkpoint
 
@@ -109,13 +104,6 @@ def weights_to_cpu(state_dict):
     for key, val in state_dict.items():
         state_dict_cpu[key] = val.cpu()
     return state_dict_cpu
-
-
-def make_optim_state_dict(data, data_type):
-    if isinstance(data, dict):
-        return {k: v.state_dict() for k, v in data.items()}
-    elif isinstance(data, data_type):
-        return data.state_dict()
 
 
 def save_checkpoint(model, filename, optimizer=None, scheduler=None, meta=None):
@@ -141,7 +129,7 @@ def save_checkpoint(model, filename, optimizer=None, scheduler=None, meta=None):
 
     checkpoint = {"meta": meta, "state_dict": weights_to_cpu(model.state_dict())}
     if optimizer is not None:
-        checkpoint["optimizer"] = make_optim_state_dict(optimizer, Optimizer)
+        checkpoint["optimizer"] = optimizer.state_dict()
     if scheduler is not None:
-        checkpoint["scheduler"] = make_optim_state_dict(scheduler, _LRScheduler)
+        checkpoint["scheduler"] = scheduler.state_dict()
     torch.save(checkpoint, filename)
