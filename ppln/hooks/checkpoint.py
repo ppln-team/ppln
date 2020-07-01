@@ -56,7 +56,7 @@ class CheckpointHook(BaseHook):
 
     @master_only
     def after_run(self, runner):
-        runner.logger.info(f"Best checkpoints:")
+        runner.logger.info("Best checkpoints:")
         while not self._checkpoints.empty():
             metric, filename = self._checkpoints.get()
             runner.logger.info(f"{filename}: {metric}")

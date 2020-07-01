@@ -40,4 +40,4 @@ class EarlyStoppingHook(BaseHook):
     @master_only
     def after_run(self, runner):
         if runner.stop_training:
-            runner.logger.info(f"Early stopping")
+            runner.logger.info("Early stopping")
