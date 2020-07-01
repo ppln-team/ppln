@@ -44,6 +44,6 @@ setup(
         "albumentations",
         "yapf",
     ],
-    extras_require={"testing": ["pytest", "flake8", "black==19.3b0"]},
+    extras_require={"testing": ["pytest", "flake8", "black==19.3b0", "isort"]},
     python_requires=">=3.6.0",
 )
