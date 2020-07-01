@@ -1,4 +1,5 @@
 from collections import defaultdict
+from itertools import chain
 
 import numpy as np
 
@@ -33,11 +34,6 @@ class LogBuffer(object):
 
     def synchronize_between_processes(self):
         if is_dist_avail_and_initialized():
-            value_history_list = all_gather(self.value_history)
-            n_history_list = all_gather(self.n_history)
-            self.clear()
-            for i, (value_history, n_history) in enumerate(zip(value_history_list, n_history_list)):
-                for key in n_history:
-                    self.value_history[key].extend(value_history[key])
-                    self.n_history[key].extend(n_history[key])
-        return self.average()
+            for key in self.value_history:
+                self.value_history[key] = list(chain.from_iterable(all_gather(self.value_history[key])))
+                self.n_history[key] = list(chain.from_iterable(all_gather(self.n_history[key])))

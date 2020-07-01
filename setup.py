@@ -42,7 +42,8 @@ setup(
         "jpeg4py",
         "opencv-python",
         "albumentations",
+        "yapf",
     ],
-    setup_requires=["pytest-runner"],
+    extras_require={"testing": ["pytest", "flake8", "black==19.3b0"]},
     python_requires=">=3.6.0",
 )

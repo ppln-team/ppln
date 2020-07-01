@@ -2,11 +2,10 @@ language: python
 python:
   - "3.6"
 install:
-  - python setup.py sdist
-  - pip install flake8 black==19.3b0 isort
+  - pip install .[testing]
 before_script:
   - flake8
   - isort -rc --diff .
   - black --config=black.toml --check .
 script:
-  - python setup.py test
+  - pytest

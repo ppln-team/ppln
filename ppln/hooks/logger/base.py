@@ -1,5 +1,5 @@
-from .. import BaseHook
 from ...utils.dist import master_only
+from .. import BaseHook
 from ..priority import Priority
 from ..registry import HOOKS
 

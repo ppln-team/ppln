@@ -51,7 +51,12 @@ class TextLoggerHook(BaseLoggerHook):
         log_dict["iter"] = runner.inner_iter + 1
         log_dict["lr"] = get_lr(runner.optimizer)
         if mode == "train":
-            log_dict["time"] = runner.epoch_outputs["time"]
+            try:
+                log_dict["time"] = runner.epoch_outputs["time"]
+            except KeyError:
+                from IPython import embed
+
+                embed()
             log_dict["data_time"] = runner.epoch_outputs["data_time"]
         for name, val in runner.epoch_outputs.items():
             if name in ["time", "data_time"]:

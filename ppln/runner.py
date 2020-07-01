@@ -78,18 +78,14 @@ class Runner(HookList):
             self.max_iters = self.max_epochs * len(self.data_loader)
 
         self.call(f"before_{self.mode}_epoch")
-        self.log_buffer.clear()
         for self.inner_iter, batch in enumerate(self.data_loader):
             self.run_batch(batch, **kwargs)
-        self.epoch_outputs = self.log_buffer.synchronize_between_processes()
         self.call(f"after_{self.mode}_epoch")
 
     def run_batch(self, batch, **kwargs):
         self.call(f"before_{self.mode}_iter")
         with torch.set_grad_enabled(self.train_mode):
             self.batch_outputs = getattr(self.batch_processor, f"{self.mode}_step")(self.model, batch, **kwargs)
-        self.log_buffer.update(self.batch_outputs["values"], self.batch_outputs["num_samples"])
-        self.epoch_outputs = self.log_buffer.average()
         self.call(f"after_{self.mode}_iter")
 
         if self.train_mode:

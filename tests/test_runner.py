@@ -1,5 +1,6 @@
 import os.path as osp
 
+import pytest
 import torch
 from torch.utils.data import DataLoader
 
@@ -7,19 +8,19 @@ from ppln.hooks import CheckpointHook, EarlyStoppingHook
 from ppln.runner import Runner
 
 
-def test_iter(simple_runner: Runner):
-    max_epochs = 3
-    loader = DataLoader(torch.ones((10, 2)), batch_size=1)
+@pytest.mark.parametrize("num_samples", [1, 3])
+@pytest.mark.parametrize("max_epochs", [1, 3])
+def test_iter(simple_runner: Runner, num_samples, max_epochs):
+    loader = DataLoader(torch.ones(num_samples, 2), batch_size=1)
     simple_runner.run({"train": loader, "val": loader}, max_epochs=max_epochs)
     assert simple_runner.epoch == max_epochs - 1
-    assert simple_runner.iter == max_epochs * len(loader)
-    assert simple_runner.inner_iter == len(loader) - 1
-    assert simple_runner.max_iters == max_epochs * len(loader)
+    assert simple_runner.iter == simple_runner.max_iters
+    assert simple_runner.inner_iter == num_samples - 1
     assert simple_runner.mode == "val"
 
 
 def test_save_checkpoint(simple_runner):
-    loader = DataLoader(torch.ones((10, 2)), batch_size=1)
+    loader = DataLoader(torch.ones((3, 2)), batch_size=1)
     simple_runner.add_hook(CheckpointHook())
     simple_runner.run({"train": loader, "val": loader}, max_epochs=1)
     best_path = osp.join(simple_runner.work_dir, "best.pth")
@@ -33,7 +34,7 @@ def test_save_checkpoint(simple_runner):
 
 def test_early_stopping(simple_runner):
     patience = 2
-    loader = DataLoader(torch.ones((10, 2)), batch_size=1)
+    loader = DataLoader(torch.ones((3, 2)), batch_size=1)
     simple_runner.add_hook(EarlyStoppingHook(patience=patience))
     simple_runner.run({"train": loader, "val": loader}, max_epochs=10)
     assert simple_runner.epoch == patience
