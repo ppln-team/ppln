@@ -32,7 +32,7 @@ def init_process(rank, size, fn, backend="nccl"):
     fn(rank, size)
 
 
-@pytest.mark.parametrize("world_size", [1, 3])
+@pytest.mark.parametrize("world_size", [1, 2])
 def test_log_buffer(world_size):
     processes = []
     for rank in range(world_size):

@@ -1,12 +1,17 @@
 import functools
 import os
+import os.path as osp
 import pickle
+import shutil
+import tempfile
 from getpass import getuser
 from socket import gethostname
 
 import torch
 import torch.distributed as dist
 import torch.multiprocessing as mp
+
+from ..fileio import io
 
 
 def is_dist_avail_and_initialized():
@@ -51,7 +56,7 @@ def master_only(func):
     return wrapper
 
 
-def all_gather(data):
+def all_gather_gpu(data):
     """
     Run all_gather on arbitrary picklable data (not necessarily tensors)
     Args:
@@ -90,5 +95,32 @@ def all_gather(data):
     for size, tensor in zip(size_list, tensor_list):
         buffer = tensor.cpu().numpy().tobytes()[:size]
         data_list.append(pickle.loads(buffer))
+
+    return data_list
+
+
+def all_gather_cpu(data, tmpdir=None):
+    rank, world_size = get_dist_info()
+    # create a tmp dir if it is not specified
+    if tmpdir is None:
+        MAX_LEN = 512
+        # 32 is whitespace
+        dir_tensor = torch.full((MAX_LEN,), 32, dtype=torch.uint8, device="cuda")
+        if rank == 0:
+            tmpdir = tempfile.mkdtemp()
+            tmpdir = torch.tensor(bytearray(tmpdir.encode()), dtype=torch.uint8, device="cuda")
+            dir_tensor[: len(tmpdir)] = tmpdir
+        dist.broadcast(dir_tensor, 0)
+        tmpdir = dir_tensor.cpu().numpy().tobytes().decode().rstrip()
+    else:
+        os.makedirs(tmpdir, exist_ok=True)
+    # dump the part result to the dir
+    io.dump(data, osp.join(tmpdir, f"part_{rank}.pkl"))
+    dist.barrier()
+    # collect all parts
+    data_list = []
+    for i in range(world_size):
+        data = osp.join(tmpdir, f"part_{i}.pkl")
+        data_list.append(io.load(data))
 
     return data_list

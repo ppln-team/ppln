@@ -54,7 +54,6 @@ class CheckpointHook(BaseHook):
                 f"Best checkpoint was changed: {self.current_filename(runner)} with {self._best_metric}"
             )
 
-    @master_only
     def after_run(self, runner):
         runner.logger.info("Best checkpoints:")
         while not self._checkpoints.empty():

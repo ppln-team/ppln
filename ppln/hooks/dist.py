@@ -20,10 +20,10 @@ except ImportError as e:
 class ModelClosureHook(BaseClosureHook):
     @property
     def priority(self):
-        return Priority.VERY_HIGH
+        return Priority.HIGH
 
     def before_run(self, runner):
-        runner.model = self.func(runner.model)
+        runner.model = self._func(runner.model)
 
 
 @HOOKS.register_module

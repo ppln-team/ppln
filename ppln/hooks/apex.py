@@ -40,4 +40,4 @@ class ApexInitializeHook(BaseClosureHook):
         return Priority.VERY_HIGH
 
     def before_run(self, runner):
-        runner.model, runner.optimizer = self.func(runner.model, runner.optimizer)
+        runner.model, runner.optimizer = self._func(runner.model, runner.optimizer)

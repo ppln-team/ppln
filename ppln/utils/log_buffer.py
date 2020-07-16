@@ -3,7 +3,7 @@ from itertools import chain
 
 import numpy as np
 
-from .dist import all_gather, is_dist_avail_and_initialized
+from .dist import all_gather_cpu, all_gather_gpu, is_dist_avail_and_initialized
 
 
 class LogBuffer(object):
@@ -35,5 +35,5 @@ class LogBuffer(object):
     def synchronize_between_processes(self):
         if is_dist_avail_and_initialized():
             for key in self.value_history:
-                self.value_history[key] = list(chain.from_iterable(all_gather(self.value_history[key])))
-                self.n_history[key] = list(chain.from_iterable(all_gather(self.n_history[key])))
+                self.value_history[key] = list(chain.from_iterable(all_gather_gpu(self.value_history[key])))
+                self.n_history[key] = list(chain.from_iterable(all_gather_gpu(self.n_history[key])))

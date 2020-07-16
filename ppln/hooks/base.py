@@ -56,4 +56,4 @@ class BaseHook(object):
 @HOOKS.register_module
 class BaseClosureHook(BaseHook):
     def __init__(self, func, **kwargs):
-        self.func = partial(func, **kwargs)
+        self._func = partial(func, **kwargs)
