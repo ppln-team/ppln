@@ -6,7 +6,7 @@ from torch.utils.data import Sampler
 
 
 class WeightedRandomDistributedSampler(Sampler):
-    def __init__(self, dataset, weights, num_samples, replacement=True, num_replicas=None, rank=None):
+    def __init__(self, weights, num_samples, replacement=True, num_replicas=None, rank=None):
         if num_replicas is None:
             if not dist.is_available():
                 raise RuntimeError("Requires distributed package to be available")
@@ -15,7 +15,6 @@ class WeightedRandomDistributedSampler(Sampler):
             if not dist.is_available():
                 raise RuntimeError("Requires distributed package to be available")
             rank = dist.get_rank()
-        self.dataset = dataset
         self.weights = weights
         self.replacement = replacement
         self.num_replicas = num_replicas

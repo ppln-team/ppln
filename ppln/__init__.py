@@ -1,1 +1,3 @@
-__version__ = "1.0.3"
+from .fileio import *
+
+__version__ = "1.1"

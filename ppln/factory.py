@@ -7,7 +7,8 @@ from torch.nn.parallel import DistributedDataParallel as PytorchDDP
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
 
-from .utils.misc import get_dist_info, get_timestamp, object_from_dict
+from .utils.dist import get_dist_info
+from .utils.misc import get_timestamp, object_from_dict
 
 try:
     from apex import amp
@@ -62,7 +63,12 @@ def make_logger(log_dir):
     rank, _ = get_dist_info()
     timestamp = get_timestamp()
     logger = logging.getLogger(__name__)
-    logger.setLevel(logging.INFO)
+
+    if rank == 0:
+        logger.setLevel(logging.INFO)
+    else:
+        logger.setLevel(logging.ERROR)
+
     if log_dir and rank == 0:
         log_file = osp.join(log_dir, f"{timestamp}.log")
         make_file_handler(logger, log_file, level=logging.INFO)

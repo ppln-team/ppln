@@ -1,3 +1,5 @@
+import warnings
+
 from torch.optim.lr_scheduler import ReduceLROnPlateau
 
 from .base import BaseHook
@@ -6,9 +8,8 @@ from .registry import HOOKS
 
 @HOOKS.register_module
 class LRSchedulerHook(BaseHook):
-    def __init__(self, name="base", metric_name="base_loss", by_epoch=True):
-        self.name = name
-        self.metric_name = metric_name
+    def __init__(self, monitor_metric="loss", by_epoch=True):
+        self.monitor_metric = monitor_metric
         self.by_epoch = by_epoch
 
     def after_val_epoch(self, runner):
@@ -20,7 +21,10 @@ class LRSchedulerHook(BaseHook):
             self.step(runner)
 
     def step(self, runner):
-        if isinstance(runner.schedulers[self.name], ReduceLROnPlateau):
-            runner.schedulers[self.name].step(runner.log_buffer.output[self.metric_name])
-        else:
-            runner.schedulers[self.name].step()
+        with warnings.catch_warnings():
+            # https://discuss.pytorch.org/t/cyclic-learning-rate-how-to-use/53796/2
+            warnings.filterwarnings("ignore", category=UserWarning)
+            if isinstance(runner.scheduler, ReduceLROnPlateau):
+                runner.scheduler.step(runner.epoch_outputs[self.monitor_metric])
+            else:
+                runner.scheduler.step()

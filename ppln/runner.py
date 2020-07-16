@@ -17,8 +17,8 @@ class Runner(HookList):
     def __init__(
         self,
         model: torch.nn.Module,
-        optimizers: Union[Optimizer, Dict[str, Optimizer]],
-        schedulers: Union[_LRScheduler, Dict[str, _LRScheduler]],
+        optimizer: Optimizer,
+        scheduler: Optional[Union[_LRScheduler, ReduceLROnPlateau]],
         batch_processor: BaseBatchProcessor,
         hooks: List[Union[Dict, BaseHook]],
         work_dir: str,
@@ -27,14 +27,15 @@ class Runner(HookList):
         super().__init__(hooks)
         self.work_dir = self.init_work_dir(work_dir)
         self.logger = self.init_logger(logger)
-        self.optimizers = self.init_optimizers(optimizers)
-        self.schedulers = self.init_schedulers(schedulers)
+        self.optimizer = optimizer
+        self.scheduler = scheduler
         self.model = model
 
         self.batch_processor = batch_processor
-        self.log_buffer = LogBuffer()
+        self.batch_outputs = None
+        self.epoch_outputs = None
 
-        self.outputs = None
+        self.log_buffer = LogBuffer()
         self.mode = None
         self.data_loader = None
         self.epoch = 0
@@ -43,18 +44,6 @@ class Runner(HookList):
         self.max_epochs = 0
         self.max_iters = 0
         self.stop_training = False
-
-    @staticmethod
-    def init_optimizers(optimizers):
-        if isinstance(optimizers, Optimizer):
-            optimizers = {"base": optimizers}
-        return optimizers
-
-    @staticmethod
-    def init_schedulers(schedulers):
-        if isinstance(schedulers, (_LRScheduler, ReduceLROnPlateau)):
-            schedulers = {"base": schedulers}
-        return schedulers
 
     @staticmethod
     def init_work_dir(work_dir):
@@ -96,8 +85,7 @@ class Runner(HookList):
     def run_batch(self, batch, **kwargs):
         self.call(f"before_{self.mode}_iter")
         with torch.set_grad_enabled(self.train_mode):
-            self.outputs = getattr(self.batch_processor, f"{self.mode}_step")(self.model, batch, **kwargs)
-            self.log_buffer.update(self.outputs["values"], self.outputs["num_samples"])
+            self.batch_outputs = getattr(self.batch_processor, f"{self.mode}_step")(self.model, batch, **kwargs)
         self.call(f"after_{self.mode}_iter")
 
         if self.train_mode:

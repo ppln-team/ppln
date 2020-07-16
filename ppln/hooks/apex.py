@@ -1,5 +1,7 @@
 import warnings
 
+from torch.nn.utils.clip_grad import clip_grad_norm_
+
 from ..factory import make_apex
 from .base import BaseClosureHook
 from .optimizer import OptimizerHook
@@ -18,14 +20,14 @@ except ImportError as e:
 @HOOKS.register_module
 class ApexOptimizerHook(OptimizerHook):
     def after_train_iter(self, runner):
-        runner.optimizers[self.name].zero_grad()
+        runner.optimizer.zero_grad()
 
-        with amp.scale_loss(runner.outputs[f"{self.name}_loss"], runner.optimizers[self.name]) as scaled_loss:
+        with amp.scale_loss(runner.batch_outputs["loss"], runner.optimizer) as scaled_loss:
             scaled_loss.backward()
 
-        if self.is_clip:
-            self.func(amp.master_params(runner.optimizers[self.name]))
-        runner.optimizers[self.name].step()
+        if self.max_norm is not None:
+            clip_grad_norm_(amp.master_params(runner.optimizer), max_norm=self.max_norm, norm_type=self.norm_type)
+        runner.optimizer.step()
 
 
 @HOOKS.register_module
@@ -35,9 +37,7 @@ class ApexInitializeHook(BaseClosureHook):
 
     @property
     def priority(self):
-        return Priority.HIGHEST
+        return Priority.VERY_HIGH
 
     def before_run(self, runner):
-        runner.model, optimizers = self.func(runner.model, list(runner.optimizers.values()))
-        for name, optimizer in zip(runner.optimizers, optimizers):
-            runner.optimizers[name] = optimizer
+        runner.model, runner.optimizer = self._func(runner.model, runner.optimizer)

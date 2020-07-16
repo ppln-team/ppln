@@ -1,7 +1,4 @@
 class BaseBatchProcessor:
-    def __init__(self, cfg):
-        self.cfg = cfg
-
     def test_step(self, model, batch, **kwargs):
         raise NotImplementedError
 

@@ -1,18 +1,19 @@
 from collections import defaultdict
+from itertools import chain
 
 import numpy as np
+
+from .dist import all_gather_cpu, all_gather_gpu, is_dist_avail_and_initialized
 
 
 class LogBuffer(object):
     def __init__(self):
         self.value_history = defaultdict(list)
         self.n_history = defaultdict(list)
-        self.output = dict()
 
     def clear(self):
         self.value_history.clear()
         self.n_history.clear()
-        self.output.clear()
 
     def update(self, values, count=1):
         assert isinstance(values, dict)
@@ -23,8 +24,16 @@ class LogBuffer(object):
     def average(self, n=0):
         """Average latest n values or all values"""
         assert n >= 0
+        outputs = {}
         for key in self.value_history:
             values = np.array(self.value_history[key][-n:])
             nums = np.array(self.n_history[key][-n:])
             avg = np.sum(values * nums) / np.sum(nums)
-            self.output[key] = avg
+            outputs[key] = avg
+        return outputs
+
+    def synchronize_between_processes(self):
+        if is_dist_avail_and_initialized():
+            for key in self.value_history:
+                self.value_history[key] = list(chain.from_iterable(all_gather_gpu(self.value_history[key])))
+                self.n_history[key] = list(chain.from_iterable(all_gather_gpu(self.n_history[key])))

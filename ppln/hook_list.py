@@ -7,13 +7,13 @@ class HookList:
     def __init__(self, hooks):
         self.hooks = []
         for hook in hooks:
-            self.add(hook)
+            self.add_hook(hook)
 
     def call(self, action):
         for hook in self.hooks:
             getattr(hook, action)(self)
 
-    def add(self, hook):
+    def add_hook(self, hook):
         """Add a hook into the hook list.
         Args:
             hook (:obj:`Hook`): The hook to be registered.
