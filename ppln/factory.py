@@ -19,6 +19,8 @@ except ImportError as e:
         " you should install it from https://github.com/NVIDIA/apex"
     )
 
+DEFAULT_LOGGER_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
+
 
 def make_model(cfg) -> torch.nn.Module:
     model = object_from_dict(cfg)
@@ -50,16 +52,16 @@ def make_scheduler(optimizer: Optimizer, config: dict) -> _LRScheduler:
     return object_from_dict(config, optimizer=optimizer)
 
 
-def make_file_handler(logger, filename=None, mode="w", level=logging.INFO):
+def make_file_handler(logger, filename=None, mode="w", level=logging.INFO, format=DEFAULT_LOGGER_FORMAT):
     file_handler = logging.FileHandler(filename, mode)
-    file_handler.setFormatter(logging.Formatter("%(asctime)s - %(levelname)s - %(message)s"))
+    file_handler.setFormatter(logging.Formatter(format))
     file_handler.setLevel(level)
     logger.addHandler(file_handler)
     return logger
 
 
-def make_logger(log_dir):
-    logging.basicConfig(format="%(asctime)s - %(levelname)s - %(message)s", level=logging.INFO)
+def make_logger(log_dir, format=DEFAULT_LOGGER_FORMAT):
+    logging.basicConfig(format=format, level=logging.INFO)
     rank, _ = get_dist_info()
     timestamp = get_timestamp()
     logger = logging.getLogger(__name__)
@@ -72,4 +74,7 @@ def make_logger(log_dir):
     if log_dir and rank == 0:
         log_file = osp.join(log_dir, f"{timestamp}.log")
         make_file_handler(logger, log_file, level=logging.INFO)
+
+    logger.addHandler(logging.StreamHandler())
+
     return logger
