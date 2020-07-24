@@ -65,7 +65,6 @@ def make_logger(log_dir, format=DEFAULT_LOGGER_FORMAT):
     rank, _ = get_dist_info()
     timestamp = get_timestamp()
     logger = logging.getLogger(__name__)
-    logger.addHandler(logging.StreamHandler())
 
     if rank == 0:
         logger.setLevel(logging.INFO)
@@ -75,5 +74,7 @@ def make_logger(log_dir, format=DEFAULT_LOGGER_FORMAT):
     if log_dir and rank == 0:
         log_file = osp.join(log_dir, f"{timestamp}.log")
         make_file_handler(logger, log_file, level=logging.INFO)
+
+    logger.addHandler(logging.StreamHandler())
 
     return logger
