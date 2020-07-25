@@ -31,7 +31,7 @@ def freeze_modules(
             freeze_modules(child, root_modules, requires_grad, train, current_module)
 
 
-def lock_norm_modules(model: nn.Module, train: bool = False, requires_grad: Optional[bool] = None) -> NoReturn:
+def lock_norm_modules(model: nn.Module, train: bool = False, requires_grad: Optional[bool] = True) -> NoReturn:
     """
     Changes the train mode for all normalizing layers of the model.
     It should be used after freezing the network.

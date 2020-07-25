@@ -35,7 +35,7 @@ class ModelFreezeHook(BaseClosureHook):
 
 @HOOKS.register_module
 class NormalizationLockHook(BaseClosureHook):
-    def __init__(self, train: bool = False, requires_grad: Optional[bool] = None) -> NoReturn:
+    def __init__(self, train: bool = False, requires_grad: Optional[bool] = True) -> NoReturn:
         super().__init__(lock_norm_modules, train=train, requires_grad=requires_grad)
 
     @property
