@@ -3,8 +3,8 @@ import os.path as osp
 import warnings
 
 import torch
-from torch.nn.parallel import DistributedDataParallel as PytorchDDP
 from torch.nn.parallel import DataParallel as PytorchDP
+from torch.nn.parallel import DistributedDataParallel as PytorchDDP
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
 

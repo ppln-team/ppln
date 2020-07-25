@@ -21,7 +21,9 @@ class TextLoggerHook(BaseLoggerHook):
         if runner.mode == "train":
             iter_string = f"iter: {runner.iter + 1}, "
             lr_str = f"lr: {', '.join([f'{lr:.3e}' for lr in log_dict['lr']])}, "
-            log_str = f'Epoch [{log_dict["epoch"]}][{log_dict["iter"]}/{len(runner.data_loader)}]\t{iter_string}{lr_str}'
+            log_str = (
+                f'Epoch [{log_dict["epoch"]}][{log_dict["iter"]}/{len(runner.data_loader)}]\t{iter_string}{lr_str}'
+            )
 
             if "time" in log_dict.keys():
                 self.time_sec_tot += log_dict["time"] * len(runner.data_loader)

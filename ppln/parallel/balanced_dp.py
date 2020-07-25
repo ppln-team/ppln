@@ -37,13 +37,11 @@ class BalancedDataParallelCriterion(DataParallel):
         outputs = self.gather(outputs, self.output_device)
         return torch.mean(outputs)
 
-    def parallel_apply(
-        self, replicas, inputs, targets, kwargs
-    ):
+    def parallel_apply(self, replicas, inputs, targets, kwargs):
         lock = threading.Lock()
         results = {}
 
-        def _worker(i, module, input, target, kwargs, device = None):
+        def _worker(i, module, input, target, kwargs, device=None):
             torch.set_grad_enabled(torch.is_grad_enabled())
             if device is None:
                 device = input[0].get_device()

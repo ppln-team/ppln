@@ -63,8 +63,9 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             print(err_msg)
 
 
-def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=None, scheduler=None,
-                    ignore_loaded_keys = ()):
+def load_checkpoint(
+    model, filename, map_location=None, strict=False, optimizer=None, scheduler=None, ignore_loaded_keys=()
+):
     """Load checkpoint from a file or URI."""
     checkpoint = torch.load(filename, map_location=map_location)
 

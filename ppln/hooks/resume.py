@@ -14,7 +14,7 @@ class ResumeHook(BaseHook):
         resume_iter=True,
         strict=False,
         map_location="cpu",
-        ignore_loaded_keys = (),
+        ignore_loaded_keys=(),
     ):
         self.checkpoint = checkpoint
         self.resume_optimizer = resume_optimizer

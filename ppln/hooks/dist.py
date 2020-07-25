@@ -3,7 +3,7 @@ import warnings
 import torch
 from torch.nn import SyncBatchNorm
 
-from ..factory import make_apex_ddp, make_pytorch_ddp, make_pytorch_dp, make_pytorch_bdp
+from ..factory import make_apex_ddp, make_pytorch_bdp, make_pytorch_ddp, make_pytorch_dp
 from .base import BaseClosureHook
 from .priority import Priority
 from .registry import HOOKS
