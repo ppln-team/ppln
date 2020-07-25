@@ -4,9 +4,11 @@ import warnings
 
 import torch
 from torch.nn.parallel import DistributedDataParallel as PytorchDDP
+from torch.nn.parallel import DataParallel as PytorchDP
 from torch.optim.lr_scheduler import _LRScheduler
 from torch.optim.optimizer import Optimizer
 
+from .parallel.balanced_dp import BalancedDataParallel as PytorchBDP
 from .utils.dist import get_dist_info
 from .utils.misc import get_timestamp, object_from_dict
 
@@ -22,9 +24,17 @@ except ImportError as e:
 DEFAULT_LOGGER_FORMAT = "%(asctime)s - %(levelname)s - %(message)s"
 
 
-def make_model(cfg) -> torch.nn.Module:
+def make_model(cfg, device: torch.device = torch.device("cuda")) -> torch.nn.Module:
     model = object_from_dict(cfg)
-    return model.cuda()
+    return model.to(device)
+
+
+def make_pytorch_dp(model, **kwargs) -> torch.nn.Module:
+    return PytorchDP(model, **kwargs)
+
+
+def make_pytorch_bdp(model, **kwargs) -> torch.nn.Module:
+    return PytorchBDP(model, **kwargs)
 
 
 def make_pytorch_ddp(model, **kwargs) -> torch.nn.Module:

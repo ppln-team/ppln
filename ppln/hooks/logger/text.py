@@ -19,15 +19,17 @@ class TextLoggerHook(BaseLoggerHook):
 
     def _log_info(self, log_dict, runner):
         if runner.mode == "train":
+            iter_string = f"iter: {runner.iter + 1}, "
             lr_str = f"lr: {', '.join([f'{lr:.3e}' for lr in log_dict['lr']])}, "
-            log_str = f'Epoch [{log_dict["epoch"]}][{log_dict["iter"]}/{len(runner.data_loader)}]\t{lr_str}'
+            log_str = f'Epoch [{log_dict["epoch"]}][{log_dict["iter"]}/{len(runner.data_loader)}]\t{iter_string}{lr_str}'
+
             if "time" in log_dict.keys():
                 self.time_sec_tot += log_dict["time"] * len(runner.data_loader)
                 time_sec_avg = self.time_sec_tot / (runner.iter - self.start_iter + 1)
                 eta_sec = time_sec_avg * (runner.max_iters - runner.iter - 1)
                 eta_str = str(datetime.timedelta(seconds=int(eta_sec)))
                 log_str += f"eta: {eta_str}, "
-                log_str += f'time: {log_dict["time"]:.3f}, data_time: {log_dict["data_time"]:.3f}, '
+                log_str += f'time: {log_dict["time"]:.2f}, data_time: {log_dict["data_time"]:.2f}, '
         else:
             log_str = f'Epoch({log_dict["mode"]}) [{log_dict["epoch"]}][{log_dict["iter"]}]\t'
         log_items = []

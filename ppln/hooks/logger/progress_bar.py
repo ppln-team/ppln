@@ -37,8 +37,10 @@ class ProgressBarLoggerHook(BaseLoggerHook):
             f"{mode_color}{runner.mode:<5}{Style.RESET_ALL}",
             f'{text_color}lr:{Style.RESET_ALL} {", ".join([f"{lr:.3e}" for lr in get_lr(runner.optimizer)])}',
         ]
+        log_items.append(f"{text_color}iter:{Style.RESET_ALL} {runner.iter + 1}")
+
         for name, value in runner.epoch_outputs.items():
             if isinstance(value, float):
-                value = f"{value:.4f}"
+                value = f"{value:.2f}" if name in ["data_time", "time"] else f"{value:.4f}"
             log_items.append(f"{text_color}{name}:{Style.RESET_ALL} {value}")
         self.bar.update(f"{' | '.join(log_items)}")

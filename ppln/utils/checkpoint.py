@@ -63,11 +63,12 @@ def load_state_dict(module, state_dict, strict=False, logger=None):
             print(err_msg)
 
 
-def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=None, scheduler=None):
+def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=None, scheduler=None,
+                    ignore_loaded_keys = ()):
     """Load checkpoint from a file or URI."""
     checkpoint = torch.load(filename, map_location=map_location)
 
-    # get state_dict from checkpoint
+    # Get state_dict from checkpoint
     if isinstance(checkpoint, OrderedDict):
         state_dict = checkpoint
     elif isinstance(checkpoint, dict) and "state_dict" in checkpoint:
@@ -75,11 +76,12 @@ def load_checkpoint(model, filename, map_location=None, strict=False, optimizer=
     else:
         raise RuntimeError("No state_dict found in checkpoint file {}".format(filename))
 
-    # strip prefix of state_dict
+    # Strip prefix of state_dict
     if list(state_dict.keys())[0].startswith("module."):
         state_dict = {k[7:]: v for k, v in checkpoint["state_dict"].items()}
 
-        # load state_dict
+    # Load state_dict
+    state_dict = OrderedDict({k: v for k, v in state_dict.items() if not any([ik in k for ik in ignore_loaded_keys])})
     if hasattr(model, "module"):
         load_state_dict(model.module, state_dict, strict)
     else:

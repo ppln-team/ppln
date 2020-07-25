@@ -1,8 +1,9 @@
 import warnings
 
+import torch
 from torch.nn import SyncBatchNorm
 
-from ..factory import make_apex_ddp, make_pytorch_ddp
+from ..factory import make_apex_ddp, make_pytorch_ddp, make_pytorch_dp, make_pytorch_bdp
 from .base import BaseClosureHook
 from .priority import Priority
 from .registry import HOOKS
@@ -23,7 +24,21 @@ class ModelClosureHook(BaseClosureHook):
         return Priority.HIGH
 
     def before_run(self, runner):
-        runner.model = self._func(runner.model)
+        model_device = next(runner.model.parameters()).device
+        if model_device != torch.device("cpu"):
+            runner.model = self._func(runner.model)
+
+
+@HOOKS.register_module
+class PytorchDPHook(ModelClosureHook):
+    def __init__(self, **kwargs):
+        super().__init__(make_pytorch_dp, **kwargs)
+
+
+@HOOKS.register_module
+class PytorchBDPHook(ModelClosureHook):
+    def __init__(self, **kwargs):
+        super().__init__(make_pytorch_bdp, **kwargs)
 
 
 @HOOKS.register_module
