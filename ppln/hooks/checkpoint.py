@@ -42,17 +42,18 @@ class CheckpointHook(BaseHook):
 
     @master_only
     def after_val_epoch(self, runner):
-        metric = runner.epoch_outputs[self.monitor_metric]
+        if self.metric_name in runner.epoch_outputs.keys():
+            metric = runner.epoch_outputs[self.monitor_metric]
 
-        if self._is_update(metric):
-            self._checkpoints.put((metric, self.current_filepath(runner)))
-            self._save_checkpoint(runner)
-        if self._compare_metrics(metric, self._best_metric):
-            self._best_metric = metric
-            self._save_link(runner)
-            runner.logger.info(
-                f"Best checkpoint was changed: {self.current_filename(runner)} with {self._best_metric}"
-            )
+            if self._is_update(metric):
+                self._checkpoints.put((metric, self.current_filepath(runner)))
+                self._save_checkpoint(runner)
+            if self._compare_metrics(metric, self._best_metric):
+                self._best_metric = metric
+                self._save_link(runner)
+                runner.logger.info(
+                    f"Best checkpoint was changed: {self.current_filename(runner)} with {self._best_metric}"
+                )
 
     def after_run(self, runner):
         runner.logger.info("Best checkpoints:")
