@@ -82,7 +82,6 @@ def load_checkpoint(
         state_dict = {k[7:]: v for k, v in checkpoint["state_dict"].items()}
 
     # Load state_dict
-    state_dict = OrderedDict({k: v for k, v in state_dict.items() if not any([ik in k for ik in ignore_loaded_keys])})
     if hasattr(model, "module"):
         load_state_dict(model.module, state_dict, strict)
     else:

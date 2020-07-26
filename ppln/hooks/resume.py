@@ -22,7 +22,6 @@ class ResumeHook(BaseHook):
         self.resume_iter = resume_iter
         self.strict = strict
         self.map_location = map_location
-        self.ignore_loaded_keys = ignore_loaded_keys
 
     @property
     def priority(self):
@@ -37,7 +36,6 @@ class ResumeHook(BaseHook):
             strict=self.strict,
             optimizer=runner.optimizer if self.resume_optimizer else None,
             scheduler=runner.scheduler if self.resume_scheduler else None,
-            ignore_loaded_keys=self.ignore_loaded_keys,
         )
 
         if self.resume_iter:
