@@ -37,7 +37,7 @@ class ResumeHook(BaseHook):
             strict=self.strict,
             optimizer=runner.optimizer if self.resume_optimizer else None,
             scheduler=runner.scheduler if self.resume_scheduler else None,
-            ignore_loaded_keys=self._ignore_loaded_keys,
+            ignore_loaded_keys=self.ignore_loaded_keys,
         )
 
         if self.resume_iter:
