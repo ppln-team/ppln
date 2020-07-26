@@ -32,8 +32,8 @@ class Runner(HookList):
         self.model = model
 
         self.batch_processor = batch_processor
-        self.batch_outputs = None
-        self.epoch_outputs = None
+        self.batch_outputs = dict()
+        self.epoch_outputs = dict()
 
         self.log_buffer = LogBuffer()
         self.mode = None
