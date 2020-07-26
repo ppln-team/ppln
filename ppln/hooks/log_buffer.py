@@ -11,11 +11,11 @@ class LogBufferHook(BaseHook):
 
     def after_iter(self, runner):
         runner.log_buffer.update(runner.batch_outputs["values"], runner.batch_outputs["num_samples"])
-        runner.epoch_outputs = runner.log_buffer.average()
+        runner.epoch_outputs.update(runner.log_buffer.average())
 
     def after_epoch(self, runner):
         runner.log_buffer.synchronize_between_processes()
-        runner.epoch_outputs = runner.log_buffer.average()
+        runner.epoch_outputs.update(runner.log_buffer.average())
 
     def before_epoch(self, runner):
         runner.log_buffer.clear()
