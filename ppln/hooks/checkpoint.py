@@ -42,9 +42,9 @@ class CheckpointHook(BaseHook):
 
     @master_only
     def after_val_epoch(self, runner):
-        if self.metric_name in runner.epoch_outputs.keys():
-            metric = runner.epoch_outputs[self.monitor_metric]
+        metric = runner.epoch_outputs.get(self.monitor_metric, None)
 
+        if metric is not None:
             if self._is_update(metric):
                 self._checkpoints.put((metric, self.current_filepath(runner)))
                 self._save_checkpoint(runner)
