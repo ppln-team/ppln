@@ -25,10 +25,10 @@ class ProgressBarLoggerHook(BaseLoggerHook):
         sys.stdout.write("\n")
 
     def after_iter(self, runner):
-        self.log(runner)
+        self.log(runner, update_completed=True)
 
     @master_only
-    def log(self, runner, **kwargs):
+    def log(self, runner, update_completed=True):
         epoch_color = Fore.YELLOW
         mode_color = (Fore.RED, Fore.BLUE)[runner.train_mode]
         text_color = (Fore.CYAN, Fore.GREEN)[runner.train_mode]
@@ -44,4 +44,4 @@ class ProgressBarLoggerHook(BaseLoggerHook):
             if isinstance(value, float):
                 value = f"{value:.2f}" if name in ["data_time", "time"] else f"{value:.4f}"
             log_items.append(f"{text_color}{name}:{Style.RESET_ALL} {value}")
-        self.bar.update(f"{' | '.join(log_items)}", kwargs["update_completed"])
+        self.bar.update(f"{' | '.join(log_items)}", update_completed)
