@@ -21,6 +21,7 @@ class ProgressBarLoggerHook(BaseLoggerHook):
 
     @master_only
     def after_epoch(self, runner):
+        self.log(runner, update_completed=False)
         sys.stdout.write("\n")
 
     def after_iter(self, runner):

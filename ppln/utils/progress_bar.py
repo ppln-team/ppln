@@ -38,10 +38,12 @@ class ProgressBar(object):
         sys.stdout.flush()
         self.timer = Timer()
 
-    def update(self, text=""):
-        self.completed += 1
+    def update(self, text="", update_completed: bool = True):
+        if update_completed:
+            self.completed += 1
         elapsed = self.timer.since_start()
         fps = self.completed / elapsed
+
         if self.task_num > 0:
             percentage = self.completed / float(self.task_num)
             eta = int(elapsed * (1 - percentage) / percentage + 0.5)
@@ -56,7 +58,5 @@ class ProgressBar(object):
                 f"ETA: {eta:5}s"
             )
         else:
-            sys.stdout.write(
-                f"{text} ", f"completed: {self.completed}, " f"elapsed: {int(elapsed + 0.5)}s, " f"{fps:.1f} tasks/s"
-            )
+            sys.stdout.write(f"{text} completed: {self.completed}, ET: {int(elapsed + 0.5)}s, {fps:.1f} tasks/s")
         sys.stdout.flush()
