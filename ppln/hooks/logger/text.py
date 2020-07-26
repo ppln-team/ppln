@@ -19,10 +19,10 @@ class TextLoggerHook(BaseLoggerHook):
 
     def _log_info(self, log_dict, runner):
         if runner.mode == "train":
-            iter_string = f"iter: {runner.iter + 1}, "
+            iter_string = f"iter: {log_dict['iter']}, "
             lr_str = f"lr: {', '.join([f'{lr:.3e}' for lr in log_dict['lr']])}, "
             log_str = (
-                f'Epoch [{log_dict["epoch"]}][{log_dict["iter"]}/{len(runner.data_loader)}]\t{iter_string}{lr_str}'
+                f'Epoch [{log_dict["epoch"]}][{log_dict["inner_iter"]}/{len(runner.data_loader)}]\t{iter_string}{lr_str}'
             )
 
             if "time" in log_dict.keys():
@@ -33,12 +33,12 @@ class TextLoggerHook(BaseLoggerHook):
                 log_str += f"eta: {eta_str}, "
                 log_str += f'time: {log_dict["time"]:.2f}, data_time: {log_dict["data_time"]:.2f}, '
         else:
-            log_str = f'Epoch({log_dict["mode"]}) [{log_dict["epoch"]}][{log_dict["iter"]}]\t'
+            log_str = f'Epoch({log_dict["mode"]}) [{log_dict["epoch"]}][{log_dict["inner_iter"]}]\t'
         log_items = []
         for name, val in log_dict.items():
             # TODO: resolve this hack
             # these items have been in log_str
-            if name in ["mode", "Epoch", "iter", "lr", "time", "data_time", "epoch"]:
+            if name in ["mode", "Epoch", "iter", "inner_iter", "lr", "time", "data_time", "epoch"]:
                 continue
             if isinstance(val, float):
                 val = f"{val:.4f}"
@@ -52,7 +52,8 @@ class TextLoggerHook(BaseLoggerHook):
         mode = runner.mode
         log_dict["mode"] = mode
         log_dict["epoch"] = runner.epoch + 1
-        log_dict["iter"] = runner.inner_iter + 1
+        log_dict["iter"] = runner.iter + 1
+        log_dict["inner_iter"] = runner.inner_iter + 1
         log_dict["lr"] = get_lr(runner.optimizer)
         if mode == "train":
             log_dict["time"] = runner.epoch_outputs["time"]
